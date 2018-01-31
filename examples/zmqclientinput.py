@@ -22,7 +22,7 @@ except ImportError as e:
 
 context = zmq.Context()
 sender = context.socket(zmq.PUSH)
-bind_addr = "tcp://127.0.0.1:{}".format(1024 + 188)
+bind_addr = "tcp://127.0.0.1:{}".format(2004)
 sender.connect(bind_addr)
 
 cmdmess = {
@@ -40,9 +40,10 @@ print("starting to send control commands!")
 cmdmess["ctrl"]["thrust"] = 0
 sender.send_json(cmdmess)
 
-for i in range(2500, 4500, 1):
+for i in range(2500, 3000, 1):
     cmdmess["ctrl"]["thrust"] = i / 100.0
     sender.send_json(cmdmess)
+    print(i)
     time.sleep(0.01)
 
 cmdmess["ctrl"]["thrust"] = 0

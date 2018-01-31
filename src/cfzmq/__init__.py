@@ -316,8 +316,8 @@ class _ExtposThread(Thread):
     def run(self):
         while True:
             extposinput = self._socket.recv_json()
-            print("Got EXTPOS data")
-            print(extposinput)
+            # print("Got EXTPOS data")
+            # print(extposinput)
             #self._cf.localization.send_extpos(0,0,0)
             pk = CRTPPacket()
             pk.port = 6 #CRTPPort.LOCALIZATION
@@ -340,8 +340,9 @@ class _CtrlThread(Thread):
     def run(self):
         while True:
             cmd = self._socket.recv_json()
-            self._cf.commander.send_setpoint(cmd["roll"], cmd["pitch"],
-                                             cmd["yaw"], cmd["thrust"])
+            print(cmd)
+            # self._cf.commander.send_setpoint(cmd["ctrl"]["roll"], cmd["ctrl"]["pitch"],
+            #                                  cmd["ctrl"]["yaw"], cmd["ctrl"]["thrust"])
 
 
 class ZMQServer():
@@ -380,7 +381,7 @@ class ZMQServer():
         srv = self._context.socket(pattern)
         srv_addr = "{}:{}".format(self._base_url, port)
         srv.bind(srv_addr)
-        logger.info("Biding ZMQ {} server"
+        logger.info("Binding ZMQ {} server"
                     "at {}".format(name, srv_addr))
         return srv
 

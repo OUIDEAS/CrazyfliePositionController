@@ -12,16 +12,24 @@ for the protocol documentation.
 
 from python_vicon import PyVicon
 import time
+import numpy as np
 
 try:
     import zmq
 except ImportError as e:
     raise Exception("ZMQ library probably not installed ({})".format(e))
 
+print("Setting up socket to ext_pos . . .")
+context = zmq.Context()
+extpos_socket = context.socket(zmq.PUSH)
+bind_addr = "tcp://127.0.0.1:{}".format(2005)
+extpos_socket.connect(bind_addr)
+
+print("Setting up socket to PID control . . .")
 # context = zmq.Context()
-# extpos_socket = context.socket(zmq.PUSH)
-# bind_addr = "tcp://127.0.0.1:{}".format(2005)
-# extpos_socket.connect(bind_addr)
+PID_socket = context.socket(zmq.PUSH)
+bind_addr_PID = "tcp://127.0.0.1:{}".format(7777)
+result = PID_socket.connect(bind_addr_PID)
 
 
 
@@ -78,7 +86,8 @@ zmess = {
   {
       "X": 0.0,
       "Y": 0.0,
-      "Z": 0.0
+      "Z": 0.0,
+      "heading": 0.0
   }
 }
 
@@ -95,6 +104,8 @@ while True:
     zmess["ext_pos"]["X"] = X["x"]
     zmess["ext_pos"]["Y"] = X["y"]
     zmess["ext_pos"]["Z"] = X["z"]
-    # extpos_socket.send_json(zmess)
+    zmess["ext_pos"]["heading"] = X["heading"]
+    extpos_socket.send_json(zmess)
+    PID_socket.send_json(zmess)
     
-    time.sleep(0.1)
+    time.sleep(0.2)
