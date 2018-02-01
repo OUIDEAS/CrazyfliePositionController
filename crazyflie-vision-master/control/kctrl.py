@@ -105,7 +105,7 @@ y_pid = PID_RP(name="yaw", P=5, I=0, D=0.35, Integrator_max=5, Integrator_min=-5
 #p_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
 # t_pid = PID_RP(name="thrust", P=25, I=5*0.035, D=8*0.035, set_point=0.8, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
 
-t_pid = PID_RP(name="thrust", P=25, I=5*0.035, D=800*0.035, set_point=0.8, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
+t_pid = PID_RP(name="thrust", P=25, I=5*0.035, D=800*0.035, set_point=1, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
 
 
 
@@ -122,7 +122,39 @@ vv_pid = PID_RP(name="velocity", P=0.1, D=0.00315, I=0.28, Integrator_max=5/0.03
 #v_pid = PID_RP(name="position", P=0.2, D=0.0, I=0.01, Integrator_max=100, Integrator_min=-100, set_point=1.6, zmq_connection=pid_viz_conn)
 #vv_pid = PID_RP(name="velocity", P=0.1, D=0.09, I=0.0, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 
-#tv_pid = PID_RP((((
+def waypoints(r_pid,y_pid,t_pid):
+
+    DT = time.time()- TimeStart
+    if DT < 5:
+        X = 0
+        Y = 0
+        Z = 1
+        print("Waypoint 1")
+
+    elif DT > 5 and DT<10:
+        X = 1
+        Y = 0
+        Z = 1
+        print("Waypoint 2")
+
+    elif DT > 10 and DT < 15:
+        X = -1
+        Y = 0
+        Z = 1.5
+        print("Waypoint 3")
+
+    elif DT > 15 and DT< 20:
+        X = 0
+        Y = 0
+        Z = 0
+
+
+
+    r_pid.set_point = Y
+    p_pid.set_point = X
+    t_pid.set_point = Z
+
+    return r_pid,y_pid,t_pid
 
 f_x = 1000.0
 f_y = f_x
@@ -147,7 +179,7 @@ rp_i = r_pid.Ki
 rp_d = r_pid.Kd
 
 #Geofence
-geo_travel = 1.2        #meters
+geo_travel = 2.5       #meters
 geo_height = 1.75       #meters
 geo_broken = False
 
@@ -166,7 +198,11 @@ print("Zero input message send . . .")
 time.sleep(1)
 detected = True
 print("Starting to send control messages . . .")
+
+TimeStart = time.time()
+
 while detected == True:
+    r_pid,y_pid,t_pid = waypoints(r_pid,y_pid,t_pid)
     try:
         try:
             position = vicon_conn.recv_json()
@@ -333,7 +369,7 @@ while detected == True:
                 cmd["ctrl"]["thrust"] = thrust
                 cmd["ctrl"]["yaw"] = yaw
 
-                print("Roll:", "{0:.3f}".format(roll), "\t","Pitch:", "{0:.3f}".format(pitch), "\t","Thrust:", "{0:.3f}".format(thrust))
+                # print("Roll:", "{0:.3f}".format(roll), "\t","Pitch:", "{0:.3f}".format(pitch), "\t","Thrust:", "{0:.3f}".format(thrust))
 
             else:
                  on_detect_counter += 1

@@ -122,7 +122,7 @@ while True:
     X = getPos()
 
     if X["x"] is not False:
-        yaw_rate = (xprev["heading"] - X["heading"])/0.01
+        yaw_rate = (xprev["heading"] - X["heading"])/0.1
         zmess["ext_pos"]["X"] = X["x"]
         zmess["ext_pos"]["Y"] = X["y"]
         zmess["ext_pos"]["Z"] = X["z"]
@@ -138,4 +138,4 @@ while True:
 
     PID_socket.send_json(zmess)
     
-    time.sleep(0.01)
+    time.sleep(0.1)
