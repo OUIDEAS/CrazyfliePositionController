@@ -81,7 +81,7 @@ pid_viz_conn = context.socket(zmq.PUSH)
 pid_viz_conn.connect("tcp://127.0.0.1:5123")
 
 ctrl_conn = context.socket(zmq.PULL)
-ctrl_conn.connect("tcp://127.0.0.1:5124")
+ctrl_conn.connect("tcp://127.0.0.1:1212")
 
 
 
@@ -90,6 +90,7 @@ ctrl_conn.connect("tcp://127.0.0.1:5124")
 
 vicon_conn = context.socket(zmq.PULL)
 vicon_conn.setsockopt(zmq.CONFLATE,1)
+vicon_conn.setsockopt(zmq.LINGER,500)       #Socket timeout 0.5 seconds
 result = vicon_conn.bind("tcp://127.0.0.1:7777")
 
 
@@ -102,7 +103,7 @@ p_pid = PID_RP(name="pitch", P=25, I=0.28, D=7, Integrator_max=5, Integrator_min
 y_pid = PID_RP(name="yaw", P=5, I=0, D=0.35, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 #r_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
 #p_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
-t_pid = PID_RP(name="thrust", P=20, I=5*0.035, D=8*0.035, set_point=2, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
+t_pid = PID_RP(name="thrust", P=20, I=5*0.035, D=8*0.035, set_point=0.5, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
 #y_pid = PID_RP(P=0.5, D=1.0, I=0.00025, set_point=300.0)
 
 # Vertical position and velocity PID loops
@@ -140,12 +141,24 @@ rp_d = r_pid.Kd
 
 #Geofence
 geo_travel = 1.2        #meters
-geo_height = 1          #meters
+geo_height = 1.5        #meters
 geo_broken = False
 
+
+
+#Send zero input message
+print("Sending zero input message . . .")
+cmd["ctrl"]["roll"] = 0
+cmd["ctrl"]["pitch"] = 0
+cmd["ctrl"]["thrust"] = 0
+cmd["ctrl"]["yaw"] = 0
+client_conn.send_json(cmd)  # , zmq.NOBLOCK)
+print("Zero input message send . . .")
+time.sleep(1)
+
+print("Starting to send control messages . . .")
 while geo_broken == False:
     try:
-        time.sleep(0.01)
         try:
             position = vicon_conn.recv_json()
             x = position["ext_pos"]["X"] #meters
@@ -237,11 +250,12 @@ while geo_broken == False:
                 pitch = p_pid.update(-x)
                 thrust = t_pid.update(z)
                 yaw = y_pid.update(((angle - yaw_sp + 360 + 180) % 360)-180)
-                print("Roll:", "{0:.3f}".format(roll), "\t","Pitch:", "{0:.3f}".format(pitch), "\t","Thrust:", "{0:.3f}".format(thrust))
+                #print("Roll:", "{0:.3f}".format(roll), "\t","Pitch:", "{0:.3f}".format(pitch), "\t","Thrust:", "{0:.3f}".format(thrust))
 
                 #Saturation control
 
-                pitch_roll_cap = 10
+                thrust = thrust+55
+                pitch_roll_cap = 30
 
                 if thrust > 100:
                     thrust = 100
@@ -301,7 +315,7 @@ while geo_broken == False:
                 # cmd["ctrl"]["yaw"] = yaw_out
 
                 cmd["ctrl"]["roll"] = roll
-                cmd["ctrl"]["pitch"] = pitch
+                cmd["ctrl"]["pitch"] = -pitch
                 cmd["ctrl"]["thrust"] = thrust
                 cmd["ctrl"]["yaw"] = yaw
 
@@ -332,7 +346,7 @@ while geo_broken == False:
             break
 
         try:
-            client_conn.send_json(cmd, zmq.NOBLOCK)
+            client_conn.send_json(cmd)#, zmq.NOBLOCK)
         except:
             print("NOBLOCK error")
     except simplejson.scanner.JSONDecodeError as e:

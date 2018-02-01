@@ -64,8 +64,8 @@ def getPos():
                 z_ENU = trans[2] / trans_scale
                 heading = rot[2]
 
-                if heading < 0:
-                    heading = heading + 2 * np.pi
+                # if heading < 0:
+                #     heading = heading + 2 * np.pi
 
 
 
@@ -105,7 +105,7 @@ while True:
     zmess["ext_pos"]["Y"] = X["y"]
     zmess["ext_pos"]["Z"] = X["z"]
     zmess["ext_pos"]["heading"] = X["heading"]
-    extpos_socket.send_json(zmess)
+    # extpos_socket.send_json(zmess)
     PID_socket.send_json(zmess)
     
-    time.sleep(0.2)
+    time.sleep(0.1)

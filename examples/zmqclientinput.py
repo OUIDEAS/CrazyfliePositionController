@@ -27,12 +27,12 @@ except ImportError as e:
 #  "cmd": "disconnect",
 #  "uri": "radio://0/80/2M"
 # }
-
-
+#
+#
 context = zmq.Context()
-receiver_cmd = context.socket(zmq.REQ)
-bind_addr = "tcp://127.0.0.1:{}".format(2000)
-receiver_cmd.connect(bind_addr)
+# receiver_cmd = context.socket(zmq.REQ)
+# bind_addr = "tcp://127.0.0.1:{}".format(2000)
+# receiver_cmd.connect(bind_addr)
 # receiver_cmd.send_json(zmess)
 # response = receiver_cmd.recv()
 
@@ -47,10 +47,10 @@ time.sleep(1)
 # receiver_cmd.send_json(zmess)
 # Connection_response = receiver_cmd.recv()
 # print(Connection_response)
-
+#
 # context = zmq.Context()
 sender = context.socket(zmq.PUSH)
-bind_addr = "tcp://127.0.0.1:{}".format(2004)
+bind_addr = "tcp://127.0.0.1:{}".format(1212)
 sender.connect(bind_addr)
 #
 cmdmess = {
