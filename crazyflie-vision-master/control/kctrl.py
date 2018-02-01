@@ -90,7 +90,7 @@ ctrl_conn.connect("tcp://127.0.0.1:1212")
 
 vicon_conn = context.socket(zmq.PULL)
 vicon_conn.setsockopt(zmq.CONFLATE,1)
-vicon_conn.setsockopt(zmq.LINGER,500)       #Socket timeout 0.5 seconds
+vicon_conn.setsockopt(zmq.LINGER,5)       #Socket timeout 0.5 seconds
 result = vicon_conn.bind("tcp://127.0.0.1:7777")
 
 
@@ -103,7 +103,14 @@ p_pid = PID_RP(name="pitch", P=25, I=0.28, D=7, Integrator_max=5, Integrator_min
 y_pid = PID_RP(name="yaw", P=5, I=0, D=0.35, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 #r_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
 #p_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
-t_pid = PID_RP(name="thrust", P=20, I=5*0.035, D=8*0.035, set_point=0.5, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
+# t_pid = PID_RP(name="thrust", P=25, I=5*0.035, D=8*0.035, set_point=0.8, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
+
+t_pid = PID_RP(name="thrust", P=25, I=5*0.035, D=800*0.035, set_point=0.8, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
+
+
+
+# t_pid = PID_RP(name="thrust", P=20, I=.5, D=3, set_point=1, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
+
 #y_pid = PID_RP(P=0.5, D=1.0, I=0.00025, set_point=300.0)
 
 # Vertical position and velocity PID loops
@@ -141,8 +148,10 @@ rp_d = r_pid.Kd
 
 #Geofence
 geo_travel = 1.2        #meters
-geo_height = 1.5        #meters
+geo_height = 1.75       #meters
 geo_broken = False
+
+hover_thrust = 60
 
 
 
@@ -155,17 +164,22 @@ cmd["ctrl"]["yaw"] = 0
 client_conn.send_json(cmd)  # , zmq.NOBLOCK)
 print("Zero input message send . . .")
 time.sleep(1)
-
+detected = True
 print("Starting to send control messages . . .")
-while geo_broken == False:
+while detected == True:
     try:
         try:
             position = vicon_conn.recv_json()
-            x = position["ext_pos"]["X"] #meters
-            y = position["ext_pos"]["Y"] #meters
-            z = position["ext_pos"]["Z"] #meters
-            angle = position["ext_pos"]["heading"] #radians
-            detected = True
+            if position["ext_pos"]["X"] is not False:
+                x = position["ext_pos"]["X"] #meters
+                y = position["ext_pos"]["Y"] #meters
+                z = position["ext_pos"]["Z"] #meters
+                angle = position["ext_pos"]["heading"] #radians
+                detected = True
+
+            else:
+                print("No Vicon!!!")
+                detected = False
 
             if abs(x)>geo_travel:
                 print("Geofence breached at:","(","{0:.2f}".format(x),",","{0:.2f}".format(y),",","{0:.2f}".format(z),")")
@@ -254,7 +268,7 @@ while geo_broken == False:
 
                 #Saturation control
 
-                thrust = thrust+55
+                thrust = thrust+hover_thrust
                 pitch_roll_cap = 30
 
                 if thrust > 100:
