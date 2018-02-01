@@ -20,17 +20,45 @@ try:
 except ImportError as e:
     raise Exception("ZMQ library probably not installed ({})".format(e))
 
+
+# print ('disconnecting. . .')
+# zmess ={
+#  "version": 1,
+#  "cmd": "disconnect",
+#  "uri": "radio://0/80/2M"
+# }
+
+
 context = zmq.Context()
+receiver_cmd = context.socket(zmq.REQ)
+bind_addr = "tcp://127.0.0.1:{}".format(2000)
+receiver_cmd.connect(bind_addr)
+# receiver_cmd.send_json(zmess)
+# response = receiver_cmd.recv()
+
+time.sleep(1)
+
+# #Connect to radio
+# zmess ={
+#  "version": 1,
+#  "cmd": "connect",
+#  "uri": "radio://0/80/2M"
+# }
+# receiver_cmd.send_json(zmess)
+# Connection_response = receiver_cmd.recv()
+# print(Connection_response)
+
+# context = zmq.Context()
 sender = context.socket(zmq.PUSH)
 bind_addr = "tcp://127.0.0.1:{}".format(2004)
 sender.connect(bind_addr)
-
+#
 cmdmess = {
     "version": 1,
     "ctrl": {
-        "roll": 0.0,
-        "pitch": 0.0,
-        "yaw": 0.0,
+        "roll": 0,
+        "pitch": 0,
+        "yaw": 0,
         "thrust": 30
     }
 }
@@ -40,11 +68,11 @@ print("starting to send control commands!")
 cmdmess["ctrl"]["thrust"] = 0
 sender.send_json(cmdmess)
 
-for i in range(2500, 3000, 1):
-    cmdmess["ctrl"]["thrust"] = i / 100.0
+for i in range(25, 30, 1):
+    cmdmess["ctrl"]["thrust"] = i
     sender.send_json(cmdmess)
     print(i)
-    time.sleep(0.01)
+    time.sleep(1)
 
 cmdmess["ctrl"]["thrust"] = 0
 sender.send_json(cmdmess)

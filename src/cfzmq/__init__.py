@@ -322,6 +322,7 @@ class _ExtposThread(Thread):
             pk = CRTPPacket()
             pk.port = 6 #CRTPPort.LOCALIZATION
             pk.channel = 0 #self.POSITION_CH
+            print(type(extposinput["ext_pos"]["X"]))
             pk.data = struct.pack('<fff', extposinput["ext_pos"]["X"], extposinput["ext_pos"]["Y"],extposinput["ext_pos"]["Z"])
             self._cf.send_packet(pk)
             #self._cf.extpos.send_extpos(0,0,0)
@@ -341,8 +342,8 @@ class _CtrlThread(Thread):
         while True:
             cmd = self._socket.recv_json()
             print(cmd)
-            # self._cf.commander.send_setpoint(cmd["ctrl"]["roll"], cmd["ctrl"]["pitch"],
-            #                                  cmd["ctrl"]["yaw"], cmd["ctrl"]["thrust"])
+            self._cf.commander.send_setpoint(cmd["ctrl"]["roll"], cmd["ctrl"]["pitch"],
+                                             cmd["ctrl"]["yaw"], cmd["ctrl"]["thrust"])
 
 
 class ZMQServer():
