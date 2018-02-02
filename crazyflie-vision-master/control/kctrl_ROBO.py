@@ -138,8 +138,8 @@ def waypoints(r_pid,y_pid,t_pid):
         print("Waypoint 2")
 
     elif DT > 10 and DT < 15:
-        X = 1
-        Y = 1
+        X = -1
+        Y = 0
         Z = 1.5
         print("Waypoint 3")
 
@@ -202,10 +202,15 @@ print("Starting to send control messages . . .")
 TimeStart = time.time()
 
 while detected == True:
-    r_pid,y_pid,t_pid = waypoints(r_pid,y_pid,t_pid)
+    # r_pid,y_pid,t_pid = waypoints(r_pid,y_pid,t_pid)
     try:
         try:
             position = vicon_conn.recv_json()
+
+            r_pid.set_point = -position["ext_pos"]["RY"]
+            p_pid.set_point = -position["ext_pos"]["RX"]
+            t_pid.set_point = 1
+
             if position["ext_pos"]["X"] is not False:
                 x = position["ext_pos"]["X"] #meters
                 y = position["ext_pos"]["Y"] #meters

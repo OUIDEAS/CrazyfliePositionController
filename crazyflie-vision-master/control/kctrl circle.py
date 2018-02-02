@@ -123,7 +123,10 @@ vv_pid = PID_RP(name="velocity", P=0.1, D=0.00315, I=0.28, Integrator_max=5/0.03
 #vv_pid = PID_RP(name="velocity", P=0.1, D=0.09, I=0.0, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 
 def waypoints(r_pid,y_pid,t_pid):
-
+    X = 0
+    Y = 0
+    Z = 0
+    drop = Z
     DT = time.time()- TimeStart
     if DT < 5:
         X = 0
@@ -137,16 +140,16 @@ def waypoints(r_pid,y_pid,t_pid):
         Z = 1
         print("Waypoint 2")
 
-    elif DT > 10 and DT < 15:
+    elif DT > 10:
         X = 1
-        Y = 1
-        Z = 1.5
+        Y = 0
+        Z = drop - 0.01
         print("Waypoint 3")
 
-    elif DT > 15 and DT< 20:
-        X = 0
-        Y = 0
-        Z = 0
+    # elif DT > 15 and DT< 20:
+    #     X = 0
+    #     Y = 0
+    #     Z = 0
 
 
 
