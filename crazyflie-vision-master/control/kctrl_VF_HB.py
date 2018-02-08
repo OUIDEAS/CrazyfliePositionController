@@ -41,6 +41,49 @@ import numpy as np
 from pid import PID, PID_RP
 import simplejson
 
+import environment
+import UAV
+
+env = environment.enviro()
+
+paths_y = [0,0,1,1,0,0]
+paths_x = [-1.16,-0.415,-0.415,0.415,0.415,1.16]
+paths = [paths_x,paths_y]
+
+shroud_x_up = [paths_x[0]-.3,paths_x[1]-.3,paths_x[2]-.3,paths_x[3]+.3,paths_x[4]+.3,paths_x[5]+.3]
+shroud_y_up = [paths_y[0]+.3,paths_y[1]+.3,paths_y[2]+.3,paths_y[3]+.3,paths_y[4]+.3,paths_y[5]+.3]
+
+shroud_x_down = [paths_x[0]-.3,paths_x[1]+.3,paths_x[2]+.3,paths_x[3]-.3,paths_x[4]-.3,paths_x[5]+.3]
+shroud_y_down = [paths_y[0]-.3,paths_y[1]-.3,paths_y[2]-.3,paths_y[3]-.3,paths_y[4]-.3,paths_y[5]-.3]
+
+zones_x = [[shroud_x_down[0],shroud_x_up[0],shroud_x_up[1],shroud_x_down[1]],[shroud_x_up[1],shroud_x_down[1],shroud_x_down[2],shroud_x_up[2]],[shroud_x_up[2],shroud_x_down[2],shroud_x_down[3],shroud_x_up[3]],
+           [shroud_x_down[3], shroud_x_up[3], shroud_x_up[4], shroud_x_down[4]],[shroud_x_up[4], shroud_x_down[4], shroud_x_down[5], shroud_x_up[5]]]
+zones_y = [[shroud_y_down[0],shroud_y_up[0],shroud_y_up[1],shroud_y_down[1]],[shroud_y_up[1],shroud_y_down[1],shroud_y_down[2],shroud_y_up[2]],[shroud_y_up[2],shroud_y_down[2],shroud_y_down[3],shroud_y_up[3]],
+           [shroud_y_down[3], shroud_y_up[3], shroud_y_up[4], shroud_y_down[4]],[shroud_y_up[4], shroud_y_down[4], shroud_y_down[5], shroud_y_up[5]]]
+
+x = np.linspace(min(paths_x)-.3,max(paths_x)+.3,100)
+y = np.linspace(min(paths_y)-.3,max(paths_y)+.3,100)
+[X,Y] = np.meshgrid(x,y)
+
+# plt.plot(paths[0],paths[1])
+# for i in range(0,len(zones_x)):
+#     plt.plot(zones_x[i],zones_y[i])
+# plt.ion()
+
+env.hullList = [environment.hullData() for i in range(0,len(paths_x)-1)]
+
+for i in range(0,len(paths_x)-1):
+    env.hullList[i].name = i
+    env.hullList[i].path = [[paths_x[i],paths_x[i+1]],[paths_y[i],paths_y[i+1]]]
+    for j in range(0,len(zones_x[i])):
+        env.hullList[i].xlim.append(zones_x[i][j])
+        env.hullList[i].ylim.append(zones_y[i][j])
+
+env.checkPoints(X,Y,True)
+env.calcVF()
+
+
+
 # Roll/pitch limit
 CAP = 15000.0
 # Thrust limit
@@ -166,7 +209,7 @@ geo_travel = 2.5       #meters
 geo_height = 1.75       #meters
 geo_broken = False
 
-hover_thrust = 66
+hover_thrust = 60
 
 
 
@@ -184,6 +227,13 @@ print("Starting to send control messages . . .")
 
 TimeStart = time.time()
 
+myUAV = UAV.UAV(env)
+myUAV.isSim = False
+
+myUAV.lookAhead = False
+myUAV.findHulls(env)
+myUAV.inside_hulls = True
+
 while detected == True:
     DT = time.time() - TimeStart
     # r_pid,y_pid,t_pid = waypoints(r_pid,y_pid,t_pid)
@@ -192,13 +242,25 @@ while detected == True:
             position = vicon_conn.recv_json()
             # if position["ext_pos"]["Z"] > 0.3:
             if DT < 5:
-                r_pid.set_point = 0
-                p_pid.set_point = 0
-                t_pid.set_point = 1
-            else:
                 r_pid.set_point = -position["ext_pos"]["RY"]
                 p_pid.set_point = -position["ext_pos"]["RX"]
-                t_pid.set_point = position["ext_pos"]["RZ"] + 1
+                t_pid.set_point = 1
+            else:
+                myUAV.x = -position["ext_pos"]["RY"]
+                myUAV.y = -position["ext_pos"]["RX"]
+                myUAV.vic_heading = 0
+
+                myUAV.getVF(env)
+                myUAV.findHulls(env)
+                myUAV.getheading()
+
+                x_cmd = .1 * myUAV.u
+                y_cmd = .1 * myUAV.v
+                z_cmd = 1
+
+                r_pid.set_point = -x_cmd
+                p_pid.set_point = -y_cmd
+                t_pid.set_point = 1
             # if position["ext_pos"]["Z"] <= 0.3:
             #     r_pid.set_point = 0
             #     p_pid.set_point = 0
