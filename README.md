@@ -1,7 +1,7 @@
-# Clone of crazyflie-python-client
+# Crazyflie Position Guidance and Control
 
-- Vicon external position to crazyflie
-- Vicon external position to kctrl.py
-- Geofence in kctrl.py
-- Max angle roll/pitch in kctrl.py
-- Logging stabilizer.thrust messages
+Python scripts for collecting vicon motion capture data and controlling crazyflie 2.0 quadcopter. 
+
+#Instructions:
+
+Current setup runs in an anaconda environment. See crazyflie cf client library for instructions on anaconda installation. 
