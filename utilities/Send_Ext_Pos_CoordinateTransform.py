@@ -85,7 +85,7 @@ def getPos(name):
                 if heading > np.pi:
                     heading = -(2*np.pi-heading)
 
-                print(np.rad2deg(heading))
+                # print(np.rad2deg(heading))
 
 
                 X["x"] = x_ENU

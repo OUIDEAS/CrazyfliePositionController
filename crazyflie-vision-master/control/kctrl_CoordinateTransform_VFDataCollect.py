@@ -38,6 +38,10 @@ import zmq
 import math
 import numpy as np
 import atexit
+import VFControl as VectorField
+import DecayFunctions as df
+import matplotlib.pyplot as plt
+
 
 def savefile():
     f.close()
@@ -71,6 +75,30 @@ cmd = {
     }
 }
 
+plt.figure()
+plt.ion()
+plt.grid()
+
+# Create navigational field
+cvf = VectorField.CircleVectorField('Gradient')
+cvf.mCircleRadius = 0.5
+cvf.xc = 0
+cvf.yc = 0
+cvf.bUsePathFunc = False
+cvf.NormVFVectors = True
+
+# Create obstacle field
+ovf = VectorField.CircleVectorField('Gradient')
+ovf.mCircleRadius = 0.01
+ovf.G = -1
+ovf.H = -5
+ovf.L = 0
+ovf.xc = 1
+ovf.yc = 0
+ovf.bUsePathFunc = False
+ovf.bNormVFVectors = True
+#endregion
+
 context = zmq.Context()
 client_conn = context.socket(zmq.PUSH)
 client_conn.connect("tcp://127.0.0.1:1212")
@@ -103,8 +131,8 @@ yaw_sp = 0
 
 #r_pid = PID_RP(name="roll", P=30, I=0, D=10, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 #p_pid = PID_RP(name="pitch", P=30, I=0, D=10, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
-r_pid = PID_RP(name="roll", P=29, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
-p_pid = PID_RP(name="pitch", P=29, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
+r_pid = PID_RP(name="roll", P=5, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn) # r,p P = 29
+p_pid = PID_RP(name="pitch", P=5, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
 y_pid = PID_RP(name="yaw", P=80, I=20, D=15, Integrator_max=10, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 #r_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
 #p_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
@@ -127,33 +155,43 @@ vv_pid = PID_RP(name="velocity", P=0.1, D=0.00315, I=0.28, Integrator_max=5/0.03
 #v_pid = PID_RP(name="position", P=0.2, D=0.0, I=0.01, Integrator_max=100, Integrator_min=-100, set_point=1.6, zmq_connection=pid_viz_conn)
 #vv_pid = PID_RP(name="velocity", P=0.1, D=0.09, I=0.0, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 
-def waypoints(wpt,position):
+def waypoints(wpt,vf_x, vf_y):
 
-    if wpt ==0:
+    if wpt == 0:
        x = 0
        y = 0
-       z = 0.75
+       z = 0.5
        yaw = 0
 
-    if wpt >0 and wpt<=10:
-        x = position["ext_pos"]["RX"]
-        y = position["ext_pos"]["RY"]
-        z = 0.75
+    elif wpt >0 and wpt<=2:
+        # print("hover")
+        x = 0
+        y = 0
+        z = 0.5
         yaw = 0
 
 
-    if wpt == 11:
-        x = 0
-        y = 0
-        z = 0.75
+    elif wpt > 2 and wpt <= 15 :
+        # print("Vector field")
+        x = vf_x
+        y = vf_y
+        z = 0.5
+        yaw = 0
 
-    if wpt == 12:
+    # if wpt == 12:
+    #     x = 0
+    #     y = 0
+    #     z = 0.25
+    #     yaw = 0
+    #
+
+    elif wpt>15 and wpt<=17:
         x = 0
         y = 0
         z = 0.25
         yaw = 0
 
-    if wpt > 12:
+    else:
         x = 0
         y = 0
         z = -0.1
@@ -233,15 +271,72 @@ while detected == True:
             x = position["ext_pos"]["X"]
             y = position["ext_pos"]["Y"]
             z = position["ext_pos"]["Z"]
+
+
+
+            ovf.xc = 0
+            ovf.yc = 0
+
             yaw = position["ext_pos"]["Yaw"]
             yaw_rate = position["ext_pos"]["YawRate"]
             angle = yaw
 
+            params = VectorField.VFData()
+            params.x = x
+            params.y = y
 
-            wpt = int((time.time()-TimeStart)/1)
-            # print(wpt)
-            SPx,SPy,SPz,SP_yaw = waypoints(wpt,position)
+            # Calculate obstacle field decay
+            rOVF = np.sqrt(np.square(x - ovf.xc) + np.square(y - ovf.yc))
+            p = df.VGauss(rOVF)
 
+            # Navigationl field component
+            newCVF = cvf.GetVF_at_XY(params)
+            u = newCVF.F[0]
+            v = newCVF.F[1]
+
+            circle = plt.Circle((ovf.xc, ovf.yc), 0.2, color='r', fill=False)
+            vf_circle = plt.Circle((cvf.xc, cvf.yc), cvf.mCircleRadius, color='b', fill=False)
+            ax = plt.gca()
+            ax.add_artist(plt.scatter(x, y, c='k'))
+            ax.add_artist(circle)
+            plt.axis('equal')
+            plt.xlabel('X Position [m]')
+            plt.ylabel('Y Position [m]')
+
+            plt.ylim(-1, 1)
+            plt.xlim(-1, 1)
+
+            plt.quiver(x, y, u, v)
+            plt.pause(0.00000001)
+            plt.cla()
+
+
+            # Obstacle field component
+            newOVF = ovf.GetVF_at_XY(params)
+            uAvoid = p * newOVF.F[0]
+            vAvoid = p * newOVF.F[1]
+
+            # Total field component
+            u = u
+            v = v
+
+            # Lead rover with heading command
+            d = 0.25
+            headingCmd = np.arctan2(v, u)
+            xCmd = d * np.cos(headingCmd) + x
+            yCmd = d * np.sin(headingCmd) + y
+            xGoTo = [xCmd, yCmd, headingCmd]
+
+            # print(xCmd,yCmd)
+            # print("X:" + xCmd+"\t"+"Y:"+yCmd+"\t"+ np.rad2deg(headingCmd))
+
+
+
+            wpt = int((time.time()-TimeStart)/2)
+            # print("Waypoint:","\t",wpt,"\t","VF:",headingCmd)
+            SPx,SPy,SPz,SP_yaw = waypoints(wpt,xCmd,yCmd)
+
+            print("SPX:","\t",SPx,'\t',"SPy:","\t",SPy)
 
             #Changing setpoint to local coordinates
             theta = np.arctan2(SPy - y,SPx-x)
@@ -269,6 +364,7 @@ while detected == True:
             t_pid.set_point = SPz
 
 
+            # print(r_pid.set_point,p_pid.set_point,y_pid.set_point,t_pid.set_point)
 
             if position["ext_pos"]["X"] is not False:
                 detected = True
@@ -315,6 +411,8 @@ while detected == True:
                 thrust = t_pid.update(z)
                 yaw_cmd = y_pid.update(0)
 
+
+
                 # print("Roll:", "{0:.3f}".format(roll), "\t","Pitch:", "{0:.3f}".format(pitch), "\t","Thrust:", "{0:.3f}".format(thrust))
 
                 #Saturation control
@@ -343,7 +441,7 @@ while detected == True:
                 #       "{0:.3f}".format(cmd["ctrl"]["yaw"]), "\t", "Yaw:",
                 #       "{0:.3f}".format(np.rad2deg(yaw)))
 
-                print("Roll:", "{0:.3f}".format(cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(cmd["ctrl"]["thrust"]), "\t","Waypoint:", wpt)
+                # print("Roll:", "{0:.3f}".format(cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(cmd["ctrl"]["thrust"]), "\t","Waypoint:", wpt)
 
 
                 #Strings for logging
@@ -356,7 +454,7 @@ while detected == True:
 
                 x_wp_str = str("\t" + "X_WP:" +"\t"+ "{0:.3f}".format(SPx))
                 y_wp_str = str("\t" + "Y_WP:" +"\t"+ "{0:.3f}".format(SPy))
-                z_wp_str = str("\t" + "Y_WP:" +"\t"+ "{0:.3f}".format(SPz))
+                z_wp_str = str("\t" + "Z_WP:" +"\t"+ "{0:.3f}".format(SPz))
 
 
                 x_str = "\t"+"X:" +"\t"+ "{0:.3f}".format(x)
@@ -371,12 +469,12 @@ while detected == True:
                 thrust_str = str("\t"+"Thrust:"+"\t"+ "{0:.3f}".format(cmd["ctrl"]["thrust"]))+'\n'
 
 
-
-                # control_data    = str("Roll:"+"{0:.3f}".format(cmd["ctrl"]["roll"]) , "\t"+"Pitch:"+str("{0:.3f}".format(cmd["ctrl"]["pitch"])), "\t","Thrust:", str("{0:.3f}".format(cmd["ctrl"]["thrust"])), "\t"+"Waypoint:", str(wpt))
                 wp_data = x_wp_str+y_wp_str+z_wp_str
                 set_point_data = r_set_point_str+p_set_point_str+y_set_point_str
                 control_data = roll_str+pitch_str+yaw_str+thrust_str
                 position_data   = x_str+y_str+z_str+heading_str+heading_rate
+
+                # print(control_data)
 
                 f.write(time_str+set_point_data+wp_data+position_data+control_data)
             else:
