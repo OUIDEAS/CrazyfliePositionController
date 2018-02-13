@@ -1,11 +1,13 @@
+import time
 from viconStream import viconStream
-print('worked')
-
-thing = viconStream('CF_1')
-thing.vicon_connect()
 
 
+example = viconStream('CF_3')
 
+
+time.sleep(2)
 while True:
-    thing.getPos()
+    # print("data")
+    print(example.X["z"])
+
 
