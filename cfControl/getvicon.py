@@ -9,5 +9,6 @@ time.sleep(2)
 while True:
     # print("data")
     print(example.X["z"])
+    time.sleep(1)
 
 

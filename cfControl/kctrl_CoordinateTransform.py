@@ -54,9 +54,6 @@ TH_CAP = 55000
 
 YAW_CAP = 200
 
-sp_x = 0
-sp_y = 0
-sp_z = 100
 
 import zmq
 import time
@@ -65,8 +62,8 @@ cmd = {
     "version": 1,
     "client_name": "N/A",
     "ctrl": {
-        "roll": 0.1,
-        "pitch": 0.1,
+        "roll": 0.0,
+        "pitch": 0.0,
         "yaw": 0.0,
         "thrust": 0.0
     }
@@ -86,20 +83,9 @@ ctrl_conn = context.socket(zmq.PULL)
 ctrl_conn.connect("tcp://127.0.0.1:1212")
 
 
-
-
-
-yaw_sp = 0
-
-#r_pid = PID_RP(name="roll", P=30, I=0, D=10, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
-#p_pid = PID_RP(name="pitch", P=30, I=0, D=10, Integrator_max=5, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 r_pid = PID_RP(name="roll", P=29, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
 p_pid = PID_RP(name="pitch", P=29, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
 y_pid = PID_RP(name="yaw", P=80, I=20, D=15, Integrator_max=10, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
-#r_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
-#p_pid = PID_RP(P=0.1, D=0.3, I=0, Integrator_max=5, Integrator_min=-5, set_point=0)
-# t_pid = PID_RP(name="thrust", P=25, I=5*0.035, D=8*0.035, set_point=0.8, Integrator_max=0.01, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
-
 t_pid = PID_RP(name="thrust", P=55, I=120, D=45, set_point=0.5, Integrator_max=120, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
 
 
@@ -107,51 +93,33 @@ t_pid = PID_RP(name="thrust", P=55, I=120, D=45, set_point=0.5, Integrator_max=1
 
 
 def waypoints(wpt):
-
-
-    if wpt<1:
+    if wpt<=1:
         x = 0
         y = 0
         z = 0
         yaw = 0
-
-
-    elif wpt == 1 and wpt < 5:
+    elif wpt > 1 and wpt < 5:
         x = 0
         y = 0
-        z = 0.5
+        z = 1
         yaw = 0
-
-
-    elif wpt ==5:
+    elif wpt ==5 or wpt<6:
         x = 0
         y = 0
-        z = 0.2
+        z = 0.4
         yaw = 0
-
     else:
         x = 0
         y = 0
-        z = 0
+        z = -1
         yaw = 0
-
-
-
     return [x,y,z,yaw]
 
-f_x = 1000.0
-f_y = f_x
 
-MAX_THRUST = 65500
 
-prev_z = 0
+
 prev_t = time.time()
 
-prev_vz = 0
-
-dt = 0
-
-midi_acc = 0
 
 last_detect_ts = 0
 detect_threas_ms = 1
@@ -162,15 +130,11 @@ rp_i = r_pid.Ki
 rp_d = r_pid.Kd
 
 #Geofence
-geo_travel = 1.5       #meters
-geo_height = 1.25      #meters
-
-
-hover_thrust = 0
+geo_travel = 1.75       #meters
+geo_height = 1.5      #meters
 
 
 #Creating log
-
 filename = "time"+" "+ str(time.localtime())+" "+"r_pid" +"_"+ str(int(r_pid.Kp)) + "_"+ str(int(r_pid.Ki))+"_"+ str(int(r_pid.Kd)) + '_' \
             +"p_pid" +"_"+ str(int(p_pid.Kp)) + "_"+ str(int(p_pid.Ki))+"_"+ str(int(p_pid.Kd)) + '_' \
             +"y_pid" +"_"+ str(int(y_pid.Kp)) + "_"+ str(int(y_pid.Ki))+"_"+ str(int(y_pid.Kd)) + ".txt"
@@ -186,7 +150,7 @@ cmd["ctrl"]["roll"] = 0
 cmd["ctrl"]["pitch"] = 0
 cmd["ctrl"]["thrust"] = 0
 cmd["ctrl"]["yaw"] = 0
-client_conn.send_json(cmd)  # , zmq.NOBLOCK)
+client_conn.send_json(cmd)
 print("Zero input message send . . .")
 time.sleep(1)
 detected = True
@@ -195,58 +159,37 @@ detected = True
 print("Connecting to vicon stream. . .")
 cf_vicon = viconStream('CF_3')
 time.sleep(1)
-
 print("Starting to send control messages . . .")
-
 TimeStart = time.time()
 
-set_point_x = 1
-set_point_y = 0
 
 while detected == True:
     DT = time.time() - TimeStart
     time.sleep(0.01)
     try:
         try:
-
-
-
             x = cf_vicon.X["x"]
             y = cf_vicon.X["y"]
             z = cf_vicon.X["z"]
             yaw = cf_vicon.X["yaw"]
             yaw_rate = cf_vicon.X["yawRate"]
             angle = yaw
-
-
-
-
             wpt = int((time.time()-TimeStart)/1)
-            # print(wpt)
             SPx,SPy,SPz,SP_yaw = waypoints(wpt)
-
-
 
             #Changing setpoint to local coordinates
             theta = np.arctan2(SPy - y,SPx-x)
-            # print(np.rad2deg(theta))
-
             SPx_b = SPx-x
-            # print(SPx_b)
             SPy_b = SPy-y
-            # print(SPy_b)
             range_to_sp = np.sqrt(np.square(SPx_b)+np.square(SPy_b))
-            # print(range_to_sp)
-
             xa = range_to_sp*np.cos(theta)
             ya = range_to_sp*np.sin(theta)
 
             #Calculate set point locations relative to the UAV frame
             xb = xa*np.cos(yaw)+ya*np.sin(yaw)
-            # print(xb)
             yb = -xa*np.sin(yaw)+ya*np.cos(yaw)
-            # print(yb)
 
+            #Assign the relative set-point
             r_pid.set_point = xb-x
             p_pid.set_point = yb-y
             y_pid.set_point = SP_yaw - yaw
@@ -265,19 +208,13 @@ while detected == True:
                 print("Geofence breached at:","(","{0:.2f}".format(x),",","{0:.2f}".format(y),",","{0:.2f}".format(z),")")
                 detected = False
 
-
-
             if abs(y) > geo_travel:
                 print("Geofence breached at:","(","{0:.2f}".format(x),",","{0:.2f}".format(y),",","{0:.2f}".format(z),")")
                 detected = False
 
-
-
             if abs(z) > geo_height:
                 print("Geofence breached at:","(","{0:.2f}".format(x),",","{0:.2f}".format(y),",","{0:.2f}".format(z),")")
                 detected = False
-
-
 
         except:
             pass
@@ -285,11 +222,8 @@ while detected == True:
 
         # print("X:", "{0:.3f}".format(x), "\t", "Y:", "{0:.3f}".format(y), "\t", "z:", "{0:.3f}".format(z), "\t", "heading:", "{0:.3f}".format(np.rad2deg(angle)))
 
-
         if detected==True:
             last_detect_ts = time.time()
-
-
 
         if time.time() - last_detect_ts < detect_threas_ms and detected == True:
             if on_detect_counter >= 2:
@@ -299,10 +233,7 @@ while detected == True:
                 thrust = t_pid.update(z)
                 yaw_cmd = y_pid.update(0)
 
-                # print("Roll:", "{0:.3f}".format(roll), "\t","Pitch:", "{0:.3f}".format(pitch), "\t","Thrust:", "{0:.3f}".format(thrust))
-
                 #Saturation control
-                thrust = thrust+hover_thrust
                 pitch_roll_cap = 30
 
                 if thrust > 100:
@@ -323,16 +254,11 @@ while detected == True:
                 cmd["ctrl"]["thrust"] = thrust
                 cmd["ctrl"]["yaw"] = -yaw_cmd
 
-                # print("yaw set_point:", "{0:.3f}".format(np.rad2deg(y_pid.set_point)), "\t", "Yaw Rate:",
-                #       "{0:.3f}".format(cmd["ctrl"]["yaw"]), "\t", "Yaw:",
-                #       "{0:.3f}".format(np.rad2deg(yaw)))
-
-                print("Roll:", "{0:.3f}".format(cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(cmd["ctrl"]["thrust"]), "\t","Waypoint:", wpt)
+                # print("Roll:", "{0:.3f}".format(cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(cmd["ctrl"]["thrust"]), "\t","Waypoint:", wpt)
 
 
                 #Strings for logging
                 time_str = str("Time:" +"\t"+ "{0:.3f}".format((time.time()-TimeStart)))
-
                 r_set_point_str = str("\t"+"Roll Set Point:" +"\t"+ "{0:.3f}".format(r_pid.set_point))
                 p_set_point_str = str("\t" + "Pitch Set Point:" +"\t"+ "{0:.3f}".format(p_pid.set_point))
                 y_set_point_str = str("\t" + "Yaw Set Point:" +"\t"+ "{0:.3f}".format(y_pid.set_point))
@@ -355,7 +281,6 @@ while detected == True:
                 thrust_str = str("\t"+"Thrust:"+"\t"+ "{0:.3f}".format(cmd["ctrl"]["thrust"]))+'\n'
 
 
-
                 # control_data    = str("Roll:"+"{0:.3f}".format(cmd["ctrl"]["roll"]) , "\t"+"Pitch:"+str("{0:.3f}".format(cmd["ctrl"]["pitch"])), "\t","Thrust:", str("{0:.3f}".format(cmd["ctrl"]["thrust"])), "\t"+"Waypoint:", str(wpt))
                 wp_data = x_wp_str+y_wp_str+z_wp_str
                 set_point_data = r_set_point_str+p_set_point_str+y_set_point_str
@@ -366,9 +291,7 @@ while detected == True:
             else:
                  on_detect_counter += 1
         else:
-            #print "No detect"
             print("Throttle down!!!!")
-
             for i in range(60,-5,-1):
                 time.sleep(0.05)
                 cmd["ctrl"]["roll"] = 0
@@ -377,13 +300,8 @@ while detected == True:
                 cmd["ctrl"]["yaw"] = 0
                 r_pid.reset_dt()
                 p_pid.reset_dt()
-                y_pid.reset_dt()
-                v_pid.reset_dt()
-                vv_pid.reset_dt()
                 print("throttle = ",i)
 
-            #v
-                vv_pid.Integrator = 0.0
                 r_pid.Integrator = 0.0
                 p_pid.Integrator = 0.0
                 y_pid.Integrator = 0.0
