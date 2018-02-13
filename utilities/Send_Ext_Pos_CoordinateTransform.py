@@ -16,7 +16,7 @@ import numpy as np
 
 import atexit
 
-quadName = 'CF_2'
+quadName = 'CF_1'
 
 def savefile():
     f.close()

@@ -4,8 +4,7 @@ import time
 import numpy as np
 import _thread
 
-
-
+import threading
 
 class fakeVicon:
 
@@ -18,19 +17,18 @@ class fakeVicon:
         time_start = time.time()
 
         print("Starting background data thread. . .")
-        _thread.start_new_thread(self.backgroundData,())
+        threading.Thread(target=self.backgroundData).start()
 
     def backgroundData(self):
         while True:
-            self.x = 10*np.cos(time.time/1000)
-            self.y = 10*np.cos(time.time/1000)
+            self.x = 10*np.cos(time.time())
+            self.y = 10*np.sin(time.time())
             self.z = 1
-            self.heading = np.arctan(self.y,self.x)
-
-
+            self.heading = np.arctan2(self.y,self.x)
+            time.sleep(0.001)
 
     def getData(self):
-
+        print(self.x)
         return [self.x,self.y,self.z,self.heading]
 
 
