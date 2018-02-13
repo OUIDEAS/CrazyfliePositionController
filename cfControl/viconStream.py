@@ -2,16 +2,18 @@ from python_vicon import PyVicon
 import time
 import numpy as np
 
-
-
-class viconSteam():
+class viconStream:
     def __init__(self,name):
-        self.name = 'cf_1'
+
+        self.name = name
+        self.printPosition = False
+
 
     def vicon_connect(self):
         print("Connecting to Vicon...")
         self.client = PyVicon()
         self.client.connect("192.168.0.197", 801)
+        time.sleep(1)
 
         if not self.client.isConnected():
             print("Failed to connect to Vicon!")
@@ -55,16 +57,15 @@ class viconSteam():
                     if heading > np.pi:
                         heading = -(2*np.pi-heading)
 
-                    # print(np.rad2deg(heading))
-
-
                     X["x"] = x_ENU
                     X["y"] = y_ENU
                     X["z"] = z_ENU
                     X["Yaw"] = heading
-                    # print(X["x"], "\t", X["y"], "\t",X["z"])
-                    if s == self.name:
+
+
+                    if self.printPosition == True:
                          print("X:", "{0:.3f}".format(x_ENU), "\t","Y:", "{0:.3f}".format(y_ENU), "\t","Z:", "{0:.3f}".format(z_ENU), "\t","Yaw:", "{0:.3f}".format(np.rad2deg(heading)))
+
                     return X
 
 
