@@ -7,7 +7,7 @@ class responsePlots():
 
     def __init__(self):
         self.update_rate = 0.01
-        self.plot_history_limit = 500
+        self.plot_history_limit = 200
 
         self.x = np.array([])
         self.y = np.array([])
@@ -129,30 +129,37 @@ class responsePlots():
         while True:
             try:
                 self.ax1.cla()
-                self.ax1.plot(self.TIMES, self.XS, 'bo')
+                self.ax1.plot(self.TIMES, self.XS, 'k.')
                 self.ax1.plot(self.TIMES, self.X_SPS, 'r--')
                 self.ax1.grid(True)
                 self.ax1.set_ylabel('x (m)')
+                self.ax1.set_ylim(-3,3)
+
 
 
 
                 self.ax2.cla()
-                self.ax2.plot(self.TIMES, self.YS, 'bo')
+                self.ax2.plot(self.TIMES, self.YS, 'k.')
                 self.ax2.plot(self.TIMES, self.Y_SPS, 'r--')
                 self.ax2.grid(True)
                 self.ax2.set_ylabel('y (m)')
+                self.ax2.set_ylim(-3,3)
+
 
                 self.ax3.cla()
-                self.ax3.plot(self.TIMES, self.ZS, 'bo')
+                self.ax3.plot(self.TIMES, self.ZS, 'k.')
                 self.ax3.plot(self.TIMES, self.Z_SPS, 'r--')
                 self.ax3.grid(True)
                 self.ax3.set_ylabel('z (m)')
+                self.ax3.set_ylim(-3,3)
+
 
                 self.ax4.cla()
-                self.ax4.plot(self.TIMES, self.YAWS, 'bo')
+                self.ax4.plot(self.TIMES, self.YAWS, 'k.')
                 self.ax4.plot(self.TIMES, self.YAW_SPS, 'r--')
                 self.ax4.grid(True)
                 self.ax4.set_ylabel('yaw (degrees')
+
 
 
                 #2D position in vicon area

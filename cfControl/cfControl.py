@@ -38,25 +38,18 @@ import zmq
 import math
 import numpy as np
 import atexit
+
+import zmq
+import time
+
+from pid import PID, PID_RP
+import simplejson
 from viconStream import viconStream
+from plots  import responsePlots
 
 def savefile():
     f.close()
     print("File saved")
-
-from pid import PID, PID_RP
-import simplejson
-
-# Roll/pitch limit
-CAP = 15000.0
-# Thrust limit
-TH_CAP = 55000
-
-YAW_CAP = 200
-
-
-import zmq
-import time
 
 cmd = {
     "version": 1,
@@ -68,6 +61,74 @@ cmd = {
         "thrust": 0.0
     }
 }
+
+
+# def waypoints(wpt):
+#     if wpt<=1:
+#         x = 0
+#         y = 0
+#         z = 0
+#         yaw = 0
+#     elif wpt > 1 and wpt < 5:
+#         x = 1
+#         y = 0
+#         z = 1
+#         yaw = 0
+#     elif wpt ==5 or wpt<6:
+#         x = 0
+#         y = 0
+#         z = 0.4
+#         yaw = 0
+#     else:
+#         x = 0
+#         y = 0
+#         z = -1
+#         yaw = 0
+#     return [x,y,z,yaw]
+
+
+def waypoints(wpt):
+    if wpt<=1:
+        x = 0
+        y = 0
+        z = 0
+        yaw = 0
+    elif wpt > 1 and wpt < 5:
+        x = 1
+        y = 1
+        z = 1
+        yaw = 0
+
+    elif wpt >= 5 and wpt < 7:
+        x = -1
+        y = 1
+        z = 1
+        yaw = 0
+
+    elif wpt >= 7 and wpt < 9:
+        x = -1
+        y = -1
+        z = 1
+        yaw = 0
+
+    elif wpt >= 9 and wpt < 11:
+        x = 0
+        y = 0
+        z = 0.3
+        yaw = 0
+
+
+    elif wpt ==11 or wpt<12:
+        x = 0
+        y = 0
+        z = 0.25
+        yaw = 0
+    else:
+        x = 0
+        y = 0
+        z = -1
+        yaw = 0
+    return [x,y,z,yaw]
 
 context = zmq.Context()
 client_conn = context.socket(zmq.PUSH)
@@ -82,39 +143,15 @@ pid_viz_conn.connect("tcp://127.0.0.1:5123")
 ctrl_conn = context.socket(zmq.PULL)
 ctrl_conn.connect("tcp://127.0.0.1:1212")
 
+plot_conn = context.socket(zmq.PUSH)
+plot_conn.connect("tcp://127.0.0.1:1515")
+
+
 
 r_pid = PID_RP(name="roll", P=29, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
 p_pid = PID_RP(name="pitch", P=29, I=2.5, D=17, Integrator_max=15, Integrator_min=-15, set_point=0, zmq_connection=pid_viz_conn)
 y_pid = PID_RP(name="yaw", P=80, I=20, D=15, Integrator_max=10, Integrator_min=-5, set_point=0, zmq_connection=pid_viz_conn)
 t_pid = PID_RP(name="thrust", P=55, I=120, D=45, set_point=0.5, Integrator_max=120, Integrator_min=-0.01/0.035, zmq_connection=pid_viz_conn)
-
-
-
-
-
-def waypoints(wpt):
-    if wpt<=1:
-        x = 0
-        y = 0
-        z = 0
-        yaw = 0
-    elif wpt > 1 and wpt < 5:
-        x = 0
-        y = 0
-        z = 1
-        yaw = 0
-    elif wpt ==5 or wpt<6:
-        x = 0
-        y = 0
-        z = 0.4
-        yaw = 0
-    else:
-        x = 0
-        y = 0
-        z = -1
-        yaw = 0
-    return [x,y,z,yaw]
-
 
 
 
@@ -131,7 +168,7 @@ rp_d = r_pid.Kd
 
 #Geofence
 geo_travel = 1.75       #meters
-geo_height = 1.5      #meters
+geo_height = 1.75      #meters
 
 
 #Creating log
@@ -143,6 +180,7 @@ atexit.register(savefile)
 f = open(filename,"w+")
 
 
+# plot = responsePlots()
 
 #Send zero input message
 print("Sending zero input message . . .")
@@ -157,7 +195,7 @@ detected = True
 
 
 print("Connecting to vicon stream. . .")
-cf_vicon = viconStream('CF_3')
+cf_vicon = viconStream('CF_2')
 time.sleep(1)
 print("Starting to send control messages . . .")
 TimeStart = time.time()
@@ -174,7 +212,7 @@ while detected == True:
             yaw = cf_vicon.X["yaw"]
             yaw_rate = cf_vicon.X["yawRate"]
             angle = yaw
-            wpt = int((time.time()-TimeStart)/1)
+            wpt = int((time.time()-TimeStart)/4)
             SPx,SPy,SPz,SP_yaw = waypoints(wpt)
 
             #Changing setpoint to local coordinates
@@ -288,6 +326,25 @@ while detected == True:
                 position_data   = x_str+y_str+z_str+heading_str+heading_rate
 
                 f.write(time_str+set_point_data+wp_data+position_data+control_data)
+
+                pkt = {
+                    "x": x,
+                    "y": y,
+                    "z": z,
+                    "yaw": yaw,
+                    "x_sp": SPx,
+                    "y_sp": SPy,
+                    "z_sp": SPz,
+                    "yaw_sp": SP_yaw,
+                }
+
+                # plot.update_plots(pkt)
+                plot_conn.send_json(pkt)
+
+
+
+
+
             else:
                  on_detect_counter += 1
         else:
