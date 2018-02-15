@@ -16,7 +16,7 @@ import numpy as np
 
 import atexit
 
-quadName = 'CF_1'
+quadName = 'CF_3'
 
 def savefile():
     f.close()
@@ -132,7 +132,7 @@ xprev = getPos(quadName)
 while True:
 
     X = getPos(quadName)
-    R = getPos('MOJO_JR')
+    # R = getPos('MOJO_JR')
     # print(R["y"])
 
     string = str(X['x']) + "\t" + str(X['y']) + "\t" + str(X['z']) + "\t" + str(X['Yaw']) +'\n'
@@ -143,11 +143,11 @@ while True:
         zmess["ext_pos"]["X"] = X["x"]
         zmess["ext_pos"]["Y"] = X["y"]
         zmess["ext_pos"]["Z"] = X["z"]
-        zmess["ext_pos"]["RX"] = R["x"]
-        zmess["ext_pos"]["RY"] = R["y"]
-        zmess["ext_pos"]["RZ"] = 0
-        zmess["ext_pos"]["YawRate"] = yaw_rate
-        zmess["ext_pos"]["Yaw"] = X["Yaw"]
+        # zmess["ext_pos"]["RX"] = R["x"]
+        # zmess["ext_pos"]["RY"] = R["y"]
+        # zmess["ext_pos"]["RZ"] = 0
+        # zmess["ext_pos"]["YawRate"] = yaw_rate
+        # zmess["ext_pos"]["Yaw"] = X["Yaw"]
         # extpos_socket.send_json(zmess)
 
     else:
@@ -158,6 +158,6 @@ while True:
         # extpos_socket.send_json(zmess)
 
 
-    PID_socket.send_json(zmess)
+    # PID_socket.send_json(zmess)
     
     time.sleep(0.01)
