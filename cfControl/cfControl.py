@@ -139,9 +139,6 @@ filename = "time"+" "+ str(time.localtime())+" "+"r_pid" +"_"+ str(int(r_pid.Kp)
 atexit.register(savefile)
 f = open(filename,"w+")
 
-
-# plot = responsePlots()
-
 #Send zero input message
 print("Sending zero input message . . .")
 cmd["ctrl"]["roll"] = 0
@@ -299,8 +296,6 @@ while detected == True:
 
                 # plot.update_plots(pkt)
                 plot_conn.send_json(pkt)
-
-
 
 
 

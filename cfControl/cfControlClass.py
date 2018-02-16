@@ -56,10 +56,13 @@ class cfControlClass():
 
         #UAV information
         self.name = name
+        self.mode = 'none'
         self.x = []
         self.y = []
         self.z = []
         self.yaw = []
+
+
 
 
         #Settings
@@ -81,9 +84,6 @@ class cfControlClass():
         time.sleep(2)
 
         print(self.cf_vicon.X["x"])
-        #Instance vicon
-        #Connect to vicon
-        pass
 
     def releaseMotors(self):
         self.cmd["ctrl"]["roll"] = 0

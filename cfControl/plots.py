@@ -39,6 +39,8 @@ class responsePlots():
         self.Z_SPS = np.array([])
         self.YAW_SPS = np.array([])
 
+
+        #Template for what pkt dictionaries should look like
         # pkt = {
         #     "x": x,
         #     "y": y,
