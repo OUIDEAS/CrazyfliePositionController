@@ -1,31 +1,29 @@
 import numpy as np
 import zmq
 import time
-from pid import PID, PID_RP
+from pid import PID_RP
 import threading
-import atexit
-
 
 
 
 class PID_CLASS():
-    def __init__(self):
+    def __init__(self,viconQ,setpointQ):
         self.context = zmq.Context()
         self.client_conn = self.context.socket(zmq.PUSH)
         self.client_conn.connect("tcp://127.0.0.1:1212")
 
-        atexit.register(self.kill)
-        self.lock = threading.Lock()
-        t = threading.Thread(target=self.run,args=())
+        t = threading.Thread(target=self.run,args=(viconQ,setpointQ,))
         t.daemon = True
         t.start()
 
 
-    def run(self):
+    def run(self,viconQ,setpointQ):
         # Options
-        self.dispControlMessage = True
+        self.dispControlMessage = False
 
-        self.update_rate = 0.01
+        self.sleep_rate = 0.001
+        self.update_rate = []
+
         self.SPx = 0
         self.SPy = 0
         self.SPz = 0
@@ -78,24 +76,29 @@ class PID_CLASS():
                        zmq_connection=0)
         self.y_pid = PID_RP(name="yaw", P=self.yPID_P, I=self.yPID_I, D=self.yPID_D, Integrator_max=10, Integrator_min=-5, set_point=0,
                        zmq_connection=0)
-        self.t_pid = PID_RP(name="thrust", P=self.tPID_P, I=self.tPID_I, D=self.tPID_D, set_point=0.5, Integrator_max=120,
-                       Integrator_min=-0.01 / 0.035, zmq_connection=0)
+        self.t_pid = PID_RP(name="thrust", P=self.tPID_P, I=self.tPID_I, D=self.tPID_D, set_point=0, Integrator_max=120,
+                       Integrator_min=-120, zmq_connection=0)
+
+        SPx = 0
+        SPy = 0
+        SPz = 0
 
         while  True:
-            time.sleep(self.update_rate)
-            #Lock variables
-
+            t1 = time.time()
+            time.sleep(self.sleep_rate)
             try:
-                #Lock thread until calculations are completed
-                self.lock.acquire()
-                x = self.x
-                y = self.y
-                z = self.z
-                yaw = self.yaw
-                SPx = self.SPx
-                SPy = self.SPy
-                SPz = self.SPz
-                self.lock.release()
+                X = viconQ.get()
+                x = X["x"]
+                y = X["y"]
+                z = X["z"]
+                yaw = X["yaw"]
+
+                if not setpointQ.empty():
+                    new_set_point = setpointQ.get()
+                    SPx = new_set_point["x"]
+                    SPy = new_set_point["y"]
+                    SPz = new_set_point["y"]
+                    print('New setpoint accepted: ',new_set_point)
 
 
                 # Changing setpoint to local coordinates
@@ -145,10 +148,12 @@ class PID_CLASS():
                 if self.dispControlMessage:
                     print("Roll:", "{0:.3f}".format(self.cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(self.cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(self.cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(self.cmd["ctrl"]["thrust"]))
 
-                #Release thread so position so states can be updated
+                t2 = time.time()
+                self.update_rate = 1 / (t2 - t1)
+                # print(self.update_rate)
 
             except:
-                #Cannot acquire lock
+
                 pass
 
     def kill(self):
