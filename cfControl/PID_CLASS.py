@@ -47,7 +47,12 @@ class PID_CLASS():
 
 
         self.client_conn.send_json(self.cmd)
+        print('sending release command')
 
+
+
+        self.client_conn.send_json(self.cmd)
+        print('sending release command')
         time.sleep(1)
         #Controller gain default values
         self.rPID_P = 29
@@ -97,7 +102,7 @@ class PID_CLASS():
                     new_set_point = setpointQ.get()
                     SPx = new_set_point["x"]
                     SPy = new_set_point["y"]
-                    SPz = new_set_point["y"]
+                    SPz = new_set_point["z"]
                     print('New setpoint accepted: ',new_set_point)
 
 

@@ -5,6 +5,6 @@ from viconStream import viconStream
 import time
 
 
-uav = cfControlClass('CF_3')
+uav = cfControlClass('CF_2')
 while True:
     pass
