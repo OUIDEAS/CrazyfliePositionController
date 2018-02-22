@@ -18,7 +18,6 @@ class viconStream():
         self.update_rate = []
 
         thread = threading.Thread(target=self.run, args=(q,))
-        self.lock = threading.Lock()
         thread.daemon = True                            # Daemonize thread
         thread.start()                                  # Start the execution
 
@@ -34,6 +33,7 @@ class viconStream():
 
 
         while True:
+
             t1 = time.time()
             yaw_previous = X["yaw"]
             X = vc.getPos(self.name)
@@ -44,7 +44,8 @@ class viconStream():
             self.X["yawRate"] = (X["yaw"]-yaw_previous) / self.sleep_rate
 
             if q.full():
-                print('Warning, vicon queue is full')
+                pass
+                # print('Warning, vicon queue is full')
             else:
                 q.put(self.X)
 

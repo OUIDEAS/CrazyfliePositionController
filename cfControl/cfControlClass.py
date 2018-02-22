@@ -1,35 +1,51 @@
 import time
-from viconStream import viconStream
-import threading
-from multiprocessing import Queue
-from PID_CLASS import PID_CLASS
 import numpy as np
+from multiprocessing import Queue
+import threading
+
+
+from PID_CLASS import PID_CLASS
+from viconStream import viconStream
+from responsePlots import responsePlots
+from logger import logger
+
+import os
+
+
 
 
 class cfControlClass():
-    def __init__(self,name):
-        #UAV information
-        self.name = name
+    def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
 
+        self.time_start=time.time()
+
+        #Class Settings
+        self.name = uavName
+        self.logEnabled = logEnabled[0]
+        self.logName = logEnabled[1]
 
         #Queue List
         self.vicon_queue = Queue(maxsize=100)
         self.setpoint_queue = Queue(maxsize=1)
+        self.logger_queue = Queue(maxsize=100)
 
-        #Settings
-        self.time_start = time.time()
 
-        #Start the vicon thread
+
+
+
+        #Start threads
         self.startVicon()
-
-        #Start the control thread
         self.startControl()
 
 
+        # if self.logEnabled ==True:
+        #     self.startLog()
 
-        #Temp utility functions
-        # self.delayedSP()
+        # self.printQ()
 
+        t = threading.Thread(target=self.printQ,args=())
+        t.daemon = True
+        t.start()
         self.takeoffAndLand()
 
 
@@ -43,17 +59,27 @@ class cfControlClass():
 
 
     def startControl(self):
+        self.t1 = time.time()
         print("Starting control thread. . .")
-        self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue)
+        self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue,self.logger_queue)
+
+
+    def startPlots(self):
+        self.plots = responsePlots()
+
+
+    def startLog(self):
+        self.logger = logger(self.logger_queue,self.logName)
 
 
 
     def printQ(self):
+
         while True:
-            value = self.vicon_queue.get()
-            # print(self.vicon_queue.qsize())
-            # print(self.vicon_queue.get())
-            time.sleep(0.1)
+            print('Vicon update rate:',self.cf_vicon.update_rate,'\t','PID update rate:',self.ctrl.update_rate)#,'\t','Log:',self.logger.update_rate,'\t')
+            time.sleep(0.5)
+            os.system('cls')
+            # print('Vicon Q:',self.vicon_queue.qsize(),'\t','SP Q:',self.setpoint_queue.qsize(),'\t','Logger Q:',self.logger_queue.qsize(),'time',str(time.time()-self.t1))
 
 
 
@@ -88,15 +114,21 @@ class cfControlClass():
         sp["y"] = 0
         sp["z"] = 0.5
         self.setpoint_queue.put(sp)
+        print('setpoint sent')
 
-        time.sleep(5)
-        zs = np.linspace(0.5,0,5)
-        for i in range(0,len(zs),1):
-            sp["x"] = 0
-            sp["y"] = 0
-            sp["z"] = zs[i]
+        while True:
+            sp["z"] = time.time()
             self.setpoint_queue.put(sp)
             time.sleep(1)
+
+        # print('done')
+        # zs = np.linspace(0.5,0,5)
+        # for i in range(0,len(zs),1):
+        #     sp["x"] = 0
+        #     sp["y"] = 0
+        #     sp["z"] = zs[i]
+        #     self.setpoint_queue.put(sp)
+        #     time.sleep(1)
 
 
 

@@ -7,22 +7,25 @@ import threading
 
 
 class PID_CLASS():
-    def __init__(self,viconQ,setpointQ):
+    def __init__(self,viconQ,setpointQ,logQ):
         self.context = zmq.Context()
         self.client_conn = self.context.socket(zmq.PUSH)
         self.client_conn.connect("tcp://127.0.0.1:1212")
 
-        t = threading.Thread(target=self.run,args=(viconQ,setpointQ,))
+        self.time_start = time.time()
+
+        t = threading.Thread(target=self.run,args=(viconQ,setpointQ,logQ,))
         t.daemon = True
         t.start()
 
 
-    def run(self,viconQ,setpointQ):
+    def run(self,viconQ,setpointQ,logQ):
         # Options
         self.dispControlMessage = False
 
         self.sleep_rate = 0.001
         self.update_rate = []
+
 
         self.SPx = 0
         self.SPy = 0
@@ -87,16 +90,22 @@ class PID_CLASS():
         SPx = 0
         SPy = 0
         SPz = 0
+        SP_yaw = 0
 
         while  True:
             t1 = time.time()
             time.sleep(self.sleep_rate)
             try:
+                if viconQ.full():
+                    print('vicon full')
+                    pass
                 X = viconQ.get()
                 x = X["x"]
                 y = X["y"]
                 z = X["z"]
                 yaw = X["yaw"]
+
+
 
                 if not setpointQ.empty():
                     new_set_point = setpointQ.get()
@@ -150,15 +159,32 @@ class PID_CLASS():
 
                 self.client_conn.send_json(self.cmd)
 
+
+
                 if self.dispControlMessage:
                     print("Roll:", "{0:.3f}".format(self.cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(self.cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(self.cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(self.cmd["ctrl"]["thrust"]))
 
                 t2 = time.time()
                 self.update_rate = 1 / (t2 - t1)
+
+                #Log packet
+                pkt = {
+                    "time":time.time()-self.time_start,
+                    "x": x,
+                    "y": y,
+                    "z": z,
+                    "yaw": yaw,
+                    "x_sp": SPx,
+                    "y_sp": SPy,
+                    "z_sp": SPz,
+                    "yaw_sp": SP_yaw,
+                }
+
+                if not logQ.full():
+                    logQ.put(pkt)
                 # print(self.update_rate)
 
             except:
-
                 pass
 
     def kill(self):
