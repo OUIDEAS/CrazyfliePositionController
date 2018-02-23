@@ -36,8 +36,8 @@ class viconStream():
 
         except KeyError:
             error = 'No initial data rec from ' + self.name
-            # error_queue.put(error)
             QueueList["error"].put(error)
+            return
 
 
         DeadPacketCount = 0
@@ -67,11 +67,9 @@ class viconStream():
                 if DeadPacketCount >= self.MaxDeadPackets:
                     error = 'Number of dead packets exceeded for ' + self.name
                     QueueList["error"].put(error)
-                    print('error')
                     return
                 DeadPacketCount=DeadPacketCount+1
 
-    print('Vicon dead')
 
 
 

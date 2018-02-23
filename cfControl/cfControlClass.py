@@ -49,28 +49,31 @@ class cfControlClass():
         #Start threads
         self.startVicon()
         time.sleep(2)
-        # self.startControl()
+        self.startControl()
 
 
         # if self.logEnabled ==True:
         #     self.startLog()
 
-        # self.printQ()
 
         # t = threading.Thread(target=self.printQ,args=())
         # t.daemon = True
         # t.start()
-        # self.takeoffAndLand()
+        self.takeoffAndLand()
 
 
 
     def errorMonitor(self):
         while self.active:
-            ERROR = self.error_queue.get()
+            ERROR = self.QueueList["error"].get()
             if ERROR:
                 print(ERROR)
-                self.kill_queue.put(True)
                 self.active = False
+                for i in range(0,100):
+                    self.QueueList["kill"].put(True)
+
+                return
+
 
 
 
@@ -86,7 +89,10 @@ class cfControlClass():
     def startControl(self):
         self.t1 = time.time()
         print("Starting control thread. . .")
-        self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue,self.logger_queue,self.kill_queue)
+        # self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue,self.logger_queue,self.kill_queue)
+        self.ctrl = PID_CLASS(self.QueueList)
+
+
 
 
     def startPlots(self):
@@ -99,9 +105,8 @@ class cfControlClass():
 
 
     def printQ(self):
-
-        while True:
-            # print('Vicon update rate:',self.cf_vicon.update_rate,'\t','PID update rate:',self.ctrl.update_rate)#,'\t','Log:',self.logger.update_rate,'\t')
+        while self.active:
+            print('Vicon update rate:',self.cf_vicon.update_rate,'\t','PID update rate:',self.ctrl.update_rate)#,'\t','Log:',self.logger.update_rate,'\t')
             time.sleep(0.5)
             # os.system('cls')
             # print('Vicon Q:',self.vicon_queue.qsize(),'\t','SP Q:',self.setpoint_queue.qsize(),'\t','Logger Q:',self.logger_queue.qsize(),'time',str(time.time()-self.t1))
@@ -135,17 +140,18 @@ class cfControlClass():
         sp = {}
         time.sleep(5)
         print("Sending hover set-point")
-
         sp["x"] = 0
         sp["y"] = 0
         sp["z"] = 0.5
-        self.setpoint_queue.put(sp)
+        self.QueueList["sp"].put(sp)
         print('setpoint sent')
-
-        while True:
-            sp["z"] = time.time()
-            self.setpoint_queue.put(sp)
+        time.sleep(5)
+        while sp["z"]>0:
+            sp["z"] = sp["z"]-0.1
+            self.QueueList["sp"].put(sp)
             time.sleep(1)
+
+        self.QueueList["error"].put(True)
 
         # print('done')
         # zs = np.linspace(0.5,0,5)

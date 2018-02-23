@@ -7,19 +7,19 @@ import threading
 
 
 class PID_CLASS():
-    def __init__(self,viconQ,setpointQ,logQ,killQ):
+    def __init__(self,QueueList):
         self.context = zmq.Context()
         self.client_conn = self.context.socket(zmq.PUSH)
         self.client_conn.connect("tcp://127.0.0.1:1212")
 
         self.time_start = time.time()
 
-        t = threading.Thread(target=self.run,args=(viconQ,setpointQ,logQ,killQ))
+        t = threading.Thread(target=self.run,args=(QueueList,))
         t.daemon = True
         t.start()
 
 
-    def run(self,viconQ,setpointQ,logQ,killQ):
+    def run(self,QueueList):
         # Options
         self.dispControlMessage = False
 
@@ -37,7 +37,7 @@ class PID_CLASS():
             }
         }
 
-        if killQ.empty():
+        if QueueList["kill"].empty():
             active = True
             self.SPx = 0
             self.SPy = 0
@@ -100,14 +100,18 @@ class PID_CLASS():
             active = False
             self.kill()
 
+        for i in range(0,QueueList["vicon"].qsize()):
+            #Clear vicon Q before starting
+            QueueList["vicon"].get()
 
         while active:
             t1 = time.time()
+            time.sleep(self.sleep_rate)
             try:
-                if viconQ.full():
+                if QueueList["vicon"].full():
                     print('vicon full')
                     pass
-                X = viconQ.get()
+                X = QueueList["vicon"].get()
                 x = X["x"]
                 y = X["y"]
                 z = X["z"]
@@ -115,8 +119,8 @@ class PID_CLASS():
 
 
 
-                if not setpointQ.empty():
-                    new_set_point = setpointQ.get()
+                if not QueueList["sp"].empty():
+                    new_set_point = QueueList["sp"].get()
                     SPx = new_set_point["x"]
                     SPy = new_set_point["y"]
                     SPz = new_set_point["z"]
@@ -188,11 +192,12 @@ class PID_CLASS():
                     "yaw_sp": SP_yaw,
                 }
 
-                time.sleep(self.sleep_rate)
 
-                if not killQ.empty():
+
+                if not QueueList["kill"].empty():
                     active = False
                     self.kill()
+                    return
                 # if not logQ.full():
                 #     logQ.put(pkt)
                 # print(self.update_rate)
@@ -214,7 +219,6 @@ class PID_CLASS():
                 print("Kill cmd sent")
                 sent = True
             except:
-                print()
                 pass
 
 
