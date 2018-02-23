@@ -4,7 +4,8 @@ import viconClient
 
 
 class viconStream():
-    def __init__(self, name,q,error_queue):
+    # def __init__(self, name,q,error_queue):
+    def __init__(self, name,QueueList):
         self.name = name
         self.X = {}
         self.X["x"] = []
@@ -18,11 +19,11 @@ class viconStream():
         self.sleep_rate = 0.01
         self.update_rate = []
 
-        thread = threading.Thread(target=self.run, args=(q,error_queue,))
+        thread = threading.Thread(target=self.run, args=(QueueList,))
         thread.daemon = True                            # Daemonize thread
         thread.start()                                  # Start the execution
 
-    def run(self,q,error_queue):
+    def run(self,QueueList):
         vc = viconClient.viconClient("192.168.0.197",801)
         vc.vicon_connect()
         print("Connected to vicon stream for ",self.name)
@@ -35,7 +36,8 @@ class viconStream():
 
         except KeyError:
             error = 'No initial data rec from ' + self.name
-            error_queue.put(error)
+            # error_queue.put(error)
+            QueueList["error"].put(error)
 
 
         DeadPacketCount = 0
@@ -51,11 +53,11 @@ class viconStream():
                 self.yp = X["yaw"]
                 DeadPacketCount = 0
 
-                if q.full():
+                if QueueList["vicon"].full():
                     pass
                     # print('Warning, vicon queue is full')
                 else:
-                    q.put(self.X)
+                    QueueList["vicon"].put(self.X)
 
                 time.sleep(self.sleep_rate)
                 t2 = time.time()
@@ -64,7 +66,7 @@ class viconStream():
             else:
                 if DeadPacketCount >= self.MaxDeadPackets:
                     error = 'Number of dead packets exceeded for ' + self.name
-                    error_queue.put(error)
+                    QueueList["error"].put(error)
                     print('error')
                     return
                 DeadPacketCount=DeadPacketCount+1

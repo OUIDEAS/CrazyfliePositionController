@@ -36,7 +36,7 @@ class cfControlClass():
         self.QueueList["sp"] = self.setpoint_queue
         self.QueueList["log"] = self.logger_queue
         self.QueueList["error"] = self.error_queue
-        self.kill_queue["kill"] = self.kill_queue
+        self.QueueList["kill"] = self.kill_queue
 
 
 
@@ -78,7 +78,9 @@ class cfControlClass():
 
     def startVicon(self):
         print("Connecting to vicon stream. . .")
-        self.cf_vicon = viconStream(self.name,self.vicon_queue,self.error_queue)
+        self.cf_vicon = viconStream(self.name,self.QueueList)
+        # self.cf_vicon = viconStream(self.name,self.vicon_queue,self.error_queue)
+
 
 
     def startControl(self):
