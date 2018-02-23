@@ -34,9 +34,9 @@ class cfControlClass():
 
 
         #Start error monitor thread
-        # errorThread = threading.Thread(target=self.errorMonitor,args=())
-        # errorThread.daemon = True
-        # errorThread.start()
+        errorThread = threading.Thread(target=self.errorMonitor,args=())
+        errorThread.daemon = True
+        errorThread.start()
 
         #Start threads
         self.startVicon()
@@ -59,8 +59,8 @@ class cfControlClass():
         while True:
             ERROR = self.error_queue.get()
             if ERROR:
-
                 print(ERROR)
+
 
 
 

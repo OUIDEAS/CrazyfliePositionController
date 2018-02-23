@@ -25,52 +25,49 @@ class viconStream():
     def run(self,q,error_queue):
         vc = viconClient.viconClient("192.168.0.197",801)
         vc.vicon_connect()
-        print("Connected to vicon stream")
+        print("Connected to vicon stream for ",self.name)
         time.sleep(1)
-        print("starting to send position command!")
+        print("Attempting to rec data for ",self.name)
 
         try:
             X = vc.getPos(self.name)
-            yaw_previous = X["yaw"]
+            self.yp = X["yaw"]
 
         except KeyError:
-            error = 'No initial data being rec from VICON!'
-            print(error)
+            error = 'No initial data rec from ' + self.name
             error_queue.put(error)
 
 
+        DeadPacketCount = 0
+        while True:
+            t1 = time.time()
+            X = vc.getPos(self.name)
+            if X["x"] is not False:
+                self.X["x"] = X["x"]
+                self.X["y"] = X["y"]
+                self.X["z"] = X["z"]
+                self.X["yaw"] = X["yaw"]
+                self.X["yawRate"] = (X["yaw"]-self.yp) / self.sleep_rate
+                self.yp = X["yaw"]
+                DeadPacketCount = 0
 
-            DeadPacketCount = 0
-            while True:
-                t1 = time.time()
-                X = vc.getPos(self.name)
-
-                if X["x"] is not False:
-                    self.X["x"] = X["x"]
-                    self.X["y"] = X["y"]
-                    self.X["z"] = X["z"]
-                    self.X["yaw"] = X["yaw"]
-                    self.X["yawRate"] = (X["yaw"]-yaw_previous) / self.sleep_rate
-                    yaw_previous = X["yaw"]
-                    DeadPacketCount = 0
-                    print(X)
-
-                    if q.full():
-                        pass
-                        # print('Warning, vicon queue is full')
-                    else:
-                        q.put(self.X)
-
-                    time.sleep(self.sleep_rate)
-                    t2 = time.time()
-                    self.update_rate = 1 / (t2 - t1)
-
+                if q.full():
+                    pass
+                    # print('Warning, vicon queue is full')
                 else:
-                    if DeadPacketCount >= self.MaxDeadPackets:
-                        print('Number of dead packets reached, sending kill cmd')
-                        break
-                    DeadPacketCount=DeadPacketCount+1
-                    print('Dead Packet count:',DeadPacketCount)
+                    q.put(self.X)
+
+                time.sleep(self.sleep_rate)
+                t2 = time.time()
+                self.update_rate = 1 / (t2 - t1)
+
+            else:
+                if DeadPacketCount >= self.MaxDeadPackets:
+                    error = 'Number of dead packets exceeded for ' + self.name
+                    error_queue.put(error)
+                    break
+                DeadPacketCount=DeadPacketCount+1
+
 
 
 

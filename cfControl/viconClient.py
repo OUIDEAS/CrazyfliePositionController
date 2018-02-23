@@ -8,7 +8,6 @@ class viconClient():
 
 
     def vicon_connect(self):
-        print("Connecting to Vicon...")
         client = PyVicon()
         client.connect(self.ip, self.port)
 
