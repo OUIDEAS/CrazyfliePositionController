@@ -14,7 +14,7 @@ class PID_CLASS():
 
         self.time_start = time.time()
 
-        t = threading.Thread(target=self.run,args=(QueueList,))
+        t = threading.Thread(target=self.run,args=(QueueList,),name="PID")
         t.daemon = True
         t.start()
 
@@ -109,8 +109,8 @@ class PID_CLASS():
             time.sleep(self.sleep_rate)
             try:
                 if QueueList["vicon"].full():
-                    print('vicon full')
                     pass
+
                 X = QueueList["vicon"].get()
                 x = X["x"]
                 y = X["y"]

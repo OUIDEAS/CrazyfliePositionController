@@ -42,7 +42,7 @@ class cfControlClass():
 
 
         #Start error monitor thread
-        errorThread = threading.Thread(target=self.errorMonitor,args=())
+        errorThread = threading.Thread(target=self.errorMonitor,args=(),name='ERROR')
         errorThread.daemon = True
         errorThread.start()
 
@@ -70,13 +70,9 @@ class cfControlClass():
                 print(ERROR)
                 self.active = False
                 for i in range(0,100):
+                    print('sent kill')
                     self.QueueList["kill"].put(True)
-
                 return
-
-
-
-
 
 
     def startVicon(self):
@@ -133,34 +129,22 @@ class cfControlClass():
             pass
             # print('vicon updated at:', '{0:.3f}'.format(self.cf_vicon.update_rate),'\t','PID updating at:','{0:.3f}'.format(self.ctrl.update_rate))
 
-
-
-
     def takeoffAndLand(self):
         sp = {}
         time.sleep(5)
         print("Sending hover set-point")
         sp["x"] = 0
         sp["y"] = 0
-        sp["z"] = 0.5
+        sp["z"] = 1
         self.QueueList["sp"].put(sp)
         print('setpoint sent')
         time.sleep(5)
         while sp["z"]>0:
-            sp["z"] = sp["z"]-0.1
+            sp["z"] = sp["z"]-0.01
             self.QueueList["sp"].put(sp)
-            time.sleep(1)
+            time.sleep(0.015)
 
         self.QueueList["error"].put(True)
-
-        # print('done')
-        # zs = np.linspace(0.5,0,5)
-        # for i in range(0,len(zs),1):
-        #     sp["x"] = 0
-        #     sp["y"] = 0
-        #     sp["z"] = zs[i]
-        #     self.setpoint_queue.put(sp)
-        #     time.sleep(1)
 
 
 

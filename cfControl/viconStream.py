@@ -19,7 +19,7 @@ class viconStream():
         self.sleep_rate = 0.01
         self.update_rate = []
 
-        thread = threading.Thread(target=self.run, args=(QueueList,))
+        thread = threading.Thread(target=self.run, args=(QueueList,),name="VICON")
         thread.daemon = True                            # Daemonize thread
         thread.start()                                  # Start the execution
 
@@ -40,35 +40,41 @@ class viconStream():
             return
 
 
-        DeadPacketCount = 0
-        while True:
-            t1 = time.time()
-            X = vc.getPos(self.name)
-            if X["x"] is not False:
-                self.X["x"] = X["x"]
-                self.X["y"] = X["y"]
-                self.X["z"] = X["z"]
-                self.X["yaw"] = X["yaw"]
-                self.X["yawRate"] = (X["yaw"]-self.yp) / self.sleep_rate
-                self.yp = X["yaw"]
-                DeadPacketCount = 0
+        if QueueList["kill"].empty():
+            self.active = True
+            DeadPacketCount = 0
+            while self.active:
+                t1 = time.time()
+                X = vc.getPos(self.name)
+                if X["x"] is not False:
+                    self.X["x"] = X["x"]
+                    self.X["y"] = X["y"]
+                    self.X["z"] = X["z"]
+                    self.X["yaw"] = X["yaw"]
+                    self.X["yawRate"] = (X["yaw"]-self.yp) / self.sleep_rate
+                    self.yp = X["yaw"]
+                    DeadPacketCount = 0
 
-                if QueueList["vicon"].full():
-                    pass
-                    # print('Warning, vicon queue is full')
+                    if QueueList["vicon"].full():
+                        pass
+                        # print('Warning, vicon queue is full')
+                    else:
+                        QueueList["vicon"].put(self.X)
+
+                    time.sleep(self.sleep_rate)
+                    t2 = time.time()
+                    self.update_rate = 1 / (t2 - t1)
+
+                    if not QueueList["kill"].empty():
+                        self.active = False
+                        return
                 else:
-                    QueueList["vicon"].put(self.X)
+                    DeadPacketCount = DeadPacketCount + 1
+                    if DeadPacketCount >= self.MaxDeadPackets:
+                        error = 'Number of dead packets exceeded for ' + self.name
+                        QueueList["error"].put(error)
+                        return
 
-                time.sleep(self.sleep_rate)
-                t2 = time.time()
-                self.update_rate = 1 / (t2 - t1)
-
-            else:
-                if DeadPacketCount >= self.MaxDeadPackets:
-                    error = 'Number of dead packets exceeded for ' + self.name
-                    QueueList["error"].put(error)
-                    return
-                DeadPacketCount=DeadPacketCount+1
 
 
 
