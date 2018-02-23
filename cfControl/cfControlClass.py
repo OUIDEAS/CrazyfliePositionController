@@ -18,7 +18,7 @@ class cfControlClass():
     def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
 
         self.time_start=time.time()
-
+        self.active = True
         #Class Settings
         self.name = uavName
         self.logEnabled = logEnabled[0]
@@ -29,6 +29,14 @@ class cfControlClass():
         self.setpoint_queue = Queue(maxsize=1)
         self.logger_queue = Queue(maxsize=100)
         self.error_queue = Queue()
+        self.kill_queue = Queue()
+
+        self.QueueList = {}
+        self.QueueList["vicon"] = self.vicon_queue
+        self.QueueList["sp"] = self.setpoint_queue
+        self.QueueList["log"] = self.logger_queue
+        self.QueueList["error"] = self.error_queue
+        self.kill_queue["kill"] = self.kill_queue
 
 
 
@@ -40,7 +48,8 @@ class cfControlClass():
 
         #Start threads
         self.startVicon()
-        self.startControl()
+        time.sleep(2)
+        # self.startControl()
 
 
         # if self.logEnabled ==True:
@@ -48,18 +57,20 @@ class cfControlClass():
 
         # self.printQ()
 
-        t = threading.Thread(target=self.printQ,args=())
-        t.daemon = True
-        t.start()
-        self.takeoffAndLand()
+        # t = threading.Thread(target=self.printQ,args=())
+        # t.daemon = True
+        # t.start()
+        # self.takeoffAndLand()
 
 
 
     def errorMonitor(self):
-        while True:
+        while self.active:
             ERROR = self.error_queue.get()
             if ERROR:
                 print(ERROR)
+                self.kill_queue.put(True)
+                self.active = False
 
 
 
@@ -73,7 +84,7 @@ class cfControlClass():
     def startControl(self):
         self.t1 = time.time()
         print("Starting control thread. . .")
-        self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue,self.logger_queue)
+        self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue,self.logger_queue,self.kill_queue)
 
 
     def startPlots(self):

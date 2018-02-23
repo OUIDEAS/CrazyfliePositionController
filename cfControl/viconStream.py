@@ -65,9 +65,11 @@ class viconStream():
                 if DeadPacketCount >= self.MaxDeadPackets:
                     error = 'Number of dead packets exceeded for ' + self.name
                     error_queue.put(error)
-                    break
+                    print('error')
+                    return
                 DeadPacketCount=DeadPacketCount+1
 
+    print('Vicon dead')
 
 
 

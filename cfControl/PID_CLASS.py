@@ -7,35 +7,24 @@ import threading
 
 
 class PID_CLASS():
-    def __init__(self,viconQ,setpointQ,logQ):
+    def __init__(self,viconQ,setpointQ,logQ,killQ):
         self.context = zmq.Context()
         self.client_conn = self.context.socket(zmq.PUSH)
         self.client_conn.connect("tcp://127.0.0.1:1212")
 
         self.time_start = time.time()
 
-        t = threading.Thread(target=self.run,args=(viconQ,setpointQ,logQ,))
+        t = threading.Thread(target=self.run,args=(viconQ,setpointQ,logQ,killQ))
         t.daemon = True
         t.start()
 
 
-    def run(self,viconQ,setpointQ,logQ):
+    def run(self,viconQ,setpointQ,logQ,killQ):
         # Options
         self.dispControlMessage = False
 
         self.sleep_rate = 0.001
         self.update_rate = []
-
-
-        self.SPx = 0
-        self.SPy = 0
-        self.SPz = 0
-        self.SP_yaw = 0
-
-        self.x = 0
-        self.y = 0
-        self.z = 0
-        self.yaw = 0
 
         self.cmd = {
             "version": 1,
@@ -48,53 +37,72 @@ class PID_CLASS():
             }
         }
 
+        if killQ.empty():
+            active = True
+            self.SPx = 0
+            self.SPy = 0
+            self.SPz = 0
+            self.SP_yaw = 0
 
-        self.client_conn.send_json(self.cmd)
-        print('sending release command')
+            self.x = 0
+            self.y = 0
+            self.z = 0
+            self.yaw = 0
 
 
 
-        self.client_conn.send_json(self.cmd)
-        print('sending release command')
-        time.sleep(1)
-        #Controller gain default values
-        self.rPID_P = 29
-        self.rPID_I = 2.5
-        self.rPID_D = 17
-        self.rPID_set_point = 0
+            self.client_conn.send_json(self.cmd)
+            print('sending release command')
 
-        self.pPID_P = 29
-        self.pPID_I = 2.5
-        self.pPID_D = 17
-        self.pPID_set_point = 0
+            self.client_conn.send_json(self.cmd)
+            print('sending release command')
+            time.sleep(1)
+            # Controller gain default values
+            self.rPID_P = 29
+            self.rPID_I = 2.5
+            self.rPID_D = 17
+            self.rPID_set_point = 0
 
-        self.yPID_P = 80
-        self.yPID_I = 20
-        self.yPID_D = 15
+            self.pPID_P = 29
+            self.pPID_I = 2.5
+            self.pPID_D = 17
+            self.pPID_set_point = 0
 
-        self.tPID_P = 55
-        self.tPID_I = 120
-        self.tPID_D = 45
-        self.tPID_set_point = 0
+            self.yPID_P = 80
+            self.yPID_I = 20
+            self.yPID_D = 15
 
-        #Setup PID controllers
-        self.r_pid = PID_RP(name="roll", P=self.rPID_P, I=self.rPID_I, D=self.rPID_D, Integrator_max=15, Integrator_min=-15, set_point=0,
-                       zmq_connection=0)
-        self.p_pid = PID_RP(name="pitch", P=self.pPID_P, I=self.pPID_I, D=self.pPID_D, Integrator_max=15, Integrator_min=-15, set_point=0,
-                       zmq_connection=0)
-        self.y_pid = PID_RP(name="yaw", P=self.yPID_P, I=self.yPID_I, D=self.yPID_D, Integrator_max=10, Integrator_min=-5, set_point=0,
-                       zmq_connection=0)
-        self.t_pid = PID_RP(name="thrust", P=self.tPID_P, I=self.tPID_I, D=self.tPID_D, set_point=0, Integrator_max=120,
-                       Integrator_min=-120, zmq_connection=0)
+            self.tPID_P = 55
+            self.tPID_I = 120
+            self.tPID_D = 45
+            self.tPID_set_point = 0
 
-        SPx = 0
-        SPy = 0
-        SPz = 0
-        SP_yaw = 0
+            # Setup PID controllers
+            self.r_pid = PID_RP(name="roll", P=self.rPID_P, I=self.rPID_I, D=self.rPID_D, Integrator_max=15,
+                                Integrator_min=-15, set_point=0,
+                                zmq_connection=0)
+            self.p_pid = PID_RP(name="pitch", P=self.pPID_P, I=self.pPID_I, D=self.pPID_D, Integrator_max=15,
+                                Integrator_min=-15, set_point=0,
+                                zmq_connection=0)
+            self.y_pid = PID_RP(name="yaw", P=self.yPID_P, I=self.yPID_I, D=self.yPID_D, Integrator_max=10,
+                                Integrator_min=-5, set_point=0,
+                                zmq_connection=0)
+            self.t_pid = PID_RP(name="thrust", P=self.tPID_P, I=self.tPID_I, D=self.tPID_D, set_point=0,
+                                Integrator_max=120,
+                                Integrator_min=-120, zmq_connection=0)
 
-        while  True:
+            SPx = 0
+            SPy = 0
+            SPz = 0
+            SP_yaw = 0
+
+        else:
+            active = False
+            self.kill()
+
+
+        while active:
             t1 = time.time()
-            time.sleep(self.sleep_rate)
             try:
                 if viconQ.full():
                     print('vicon full')
@@ -180,6 +188,11 @@ class PID_CLASS():
                     "yaw_sp": SP_yaw,
                 }
 
+                time.sleep(self.sleep_rate)
+
+                if not killQ.empty():
+                    active = False
+                    self.kill()
                 # if not logQ.full():
                 #     logQ.put(pkt)
                 # print(self.update_rate)
@@ -201,6 +214,7 @@ class PID_CLASS():
                 print("Kill cmd sent")
                 sent = True
             except:
+                print()
                 pass
 
 
