@@ -157,7 +157,7 @@ class PID_CLASS():
                 self.cmd["ctrl"]["thrust"] = thrust
                 self.cmd["ctrl"]["yaw"] = -yaw_cmd
 
-                self.client_conn.send_json(self.cmd)
+                self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
 
 
 
@@ -180,12 +180,13 @@ class PID_CLASS():
                     "yaw_sp": SP_yaw,
                 }
 
-                if not logQ.full():
-                    logQ.put(pkt)
+                # if not logQ.full():
+                #     logQ.put(pkt)
                 # print(self.update_rate)
 
-            except:
+            except ValueError:
                 pass
+
 
     def kill(self):
         print("Trying to send kill cmd. . .")
