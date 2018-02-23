@@ -6,7 +6,10 @@ import viconClient
 class viconStream():
     # def __init__(self, name,q,error_queue):
     def __init__(self, name,QueueList):
+
+
         self.name = name
+        self.active = True
         self.X = {}
         self.X["x"] = []
         self.X["y"] = []
@@ -66,7 +69,7 @@ class viconStream():
                     self.update_rate = 1 / (t2 - t1)
 
                     if not QueueList["kill"].empty():
-                        self.active = False
+                        self.active = True
                         return
                 else:
                     DeadPacketCount = DeadPacketCount + 1

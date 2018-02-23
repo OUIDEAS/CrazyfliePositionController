@@ -3,15 +3,10 @@ import numpy as np
 from multiprocessing import Queue
 import threading
 
-
 from PID_CLASS import PID_CLASS
 from viconStream import viconStream
 from responsePlots import responsePlots
 from logger import logger
-
-import os
-
-
 
 
 class cfControlClass():
@@ -24,22 +19,13 @@ class cfControlClass():
         self.logEnabled = logEnabled[0]
         self.logName = logEnabled[1]
 
-        #Queue List
-        self.vicon_queue = Queue(maxsize=100)
-        self.setpoint_queue = Queue(maxsize=1)
-        self.logger_queue = Queue(maxsize=100)
-        self.error_queue = Queue()
-        self.kill_queue = Queue()
-
+        #Queue Dictionary
         self.QueueList = {}
-        self.QueueList["vicon"] = self.vicon_queue
-        self.QueueList["sp"] = self.setpoint_queue
-        self.QueueList["log"] = self.logger_queue
-        self.QueueList["error"] = self.error_queue
-        self.QueueList["kill"] = self.kill_queue
-
-
-
+        self.QueueList["vicon"] = Queue(maxsize=100)
+        self.QueueList["sp"] = Queue(maxsize=1)
+        self.QueueList["log"] = Queue(maxsize=100)
+        self.QueueList["error"] = Queue()
+        self.QueueList["kill"] = Queue()
 
         #Start error monitor thread
         errorThread = threading.Thread(target=self.errorMonitor,args=(),name='ERROR')
@@ -59,7 +45,7 @@ class cfControlClass():
         # t = threading.Thread(target=self.printQ,args=())
         # t.daemon = True
         # t.start()
-        self.takeoffAndLand()
+        # self.takeoffAndLand()
 
 
 
@@ -68,10 +54,9 @@ class cfControlClass():
             ERROR = self.QueueList["error"].get()
             if ERROR:
                 print(ERROR)
-                self.active = False
-                for i in range(0,100):
-                    print('sent kill')
-                    self.QueueList["kill"].put(True)
+                print('sent kill')
+                self.QueueList["kill"].put(True)
+                time.sleep(0.1)
                 return
 
 
@@ -109,49 +94,32 @@ class cfControlClass():
 
 
 
-    def delayedSP(self):
 
-        time.sleep(5)
-        print("3")
-        time.sleep(1)
-        print("2")
-        time.sleep(1)
-        print("1")
-        time.sleep(1)
 
+
+    def takeoff(self,height):
         sp = {}
 
-        sp["x"] = 1
-        sp["y"] = 2
-        sp["z"] = 3
-        while True:
-            time.sleep(1)
-            pass
-            # print('vicon updated at:', '{0:.3f}'.format(self.cf_vicon.update_rate),'\t','PID updating at:','{0:.3f}'.format(self.ctrl.update_rate))
-
-    def takeoffAndLand(self):
-        sp = {}
-        time.sleep(5)
-        print("Sending hover set-point")
-        sp["x"] = 0
-        sp["y"] = 0
-        sp["z"] = 1
+        X = self.QueueList["vicon"].get()
+        sp["x"] = X["x"]
+        sp["y"] = X["y"]
+        sp["z"] = height
         self.QueueList["sp"].put(sp)
-        print('setpoint sent')
-        time.sleep(5)
+
+    def land(self):
+        sp = {}
+        X = self.QueueList["vicon"].get()
+        sp["x"] = X["x"]
+        sp["y"] = X["y"]
+        sp["z"] = X["z"]
+
         while sp["z"]>0:
             sp["z"] = sp["z"]-0.01
             self.QueueList["sp"].put(sp)
-            time.sleep(0.015)
+            time.sleep(0.03)
 
-        self.QueueList["error"].put(True)
-
-
-
-
-
-
-
+        while True:
+            self.QueueList["kill"].put(True)
 
 
 

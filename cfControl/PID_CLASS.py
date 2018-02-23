@@ -111,16 +111,22 @@ class PID_CLASS():
                 if QueueList["vicon"].full():
                     pass
 
-                X = QueueList["vicon"].get()
+                try:
+                    X = QueueList["vicon"].get(timeout=0.1)
+                except:
+                    self.kill()
+
                 x = X["x"]
                 y = X["y"]
                 z = X["z"]
                 yaw = X["yaw"]
+                print(X)
 
 
 
                 if not QueueList["sp"].empty():
                     new_set_point = QueueList["sp"].get()
+
                     SPx = new_set_point["x"]
                     SPy = new_set_point["y"]
                     SPz = new_set_point["z"]
@@ -197,7 +203,7 @@ class PID_CLASS():
                 if not QueueList["kill"].empty():
                     active = False
                     self.kill()
-                    return
+
                 # if not logQ.full():
                 #     logQ.put(pkt)
                 # print(self.update_rate)
@@ -208,16 +214,17 @@ class PID_CLASS():
 
     def kill(self):
         print("Trying to send kill cmd. . .")
-        sent = False
-        while not sent:
+        self.sentKill = False
+        while not self.sentKill:
             try:
                 self.cmd["ctrl"]["roll"] = 0
                 self.cmd["ctrl"]["pitch"] = 0
                 self.cmd["ctrl"]["thrust"] = 0
                 self.cmd["ctrl"]["yaw"] = 0
-                self.client_conn.send_json(self.cmd)
+                self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
                 print("Kill cmd sent")
-                sent = True
+                self.sentKill = True
+                return
             except:
                 pass
 
