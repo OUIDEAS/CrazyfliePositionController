@@ -19,7 +19,7 @@ class viconStream():
         self.MaxDeadPackets = 20
 
 
-        self.sleep_rate = 0.01
+        self.sleep_rate = 0.005
         self.update_rate = []
 
         thread = threading.Thread(target=self.run, args=(QueueList,),name="VICON")
@@ -49,6 +49,7 @@ class viconStream():
             while self.active:
                 t1 = time.time()
                 X = vc.getPos(self.name)
+                print(X["z"])
                 if X["x"] is not False:
                     self.X["x"] = X["x"]
                     self.X["y"] = X["y"]

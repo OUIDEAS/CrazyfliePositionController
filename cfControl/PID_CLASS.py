@@ -23,7 +23,7 @@ class PID_CLASS():
         # Options
         self.dispControlMessage = False
 
-        self.sleep_rate = 0.001
+        self.sleep_rate = 0.0001
         self.update_rate = []
 
         self.cmd = {
@@ -60,19 +60,19 @@ class PID_CLASS():
             # Controller gain default values
             self.rPID_P = 29
             self.rPID_I = 2.5
-            self.rPID_D = 17
+            self.rPID_D = 15
             self.rPID_set_point = 0
 
             self.pPID_P = 29
             self.pPID_I = 2.5
-            self.pPID_D = 17
+            self.pPID_D = 15
             self.pPID_set_point = 0
 
             self.yPID_P = 80
             self.yPID_I = 20
             self.yPID_D = 15
 
-            self.tPID_P = 55
+            self.tPID_P = 45
             self.tPID_I = 120
             self.tPID_D = 45
             self.tPID_set_point = 0
@@ -112,15 +112,17 @@ class PID_CLASS():
                     pass
 
                 try:
-                    X = QueueList["vicon"].get(timeout=0.1)
+                    X = QueueList["vicon"].get(timeout=0.2)
                 except:
                     self.kill()
+                    return
 
                 x = X["x"]
                 y = X["y"]
                 z = X["z"]
                 yaw = X["yaw"]
-                print(X)
+                yawRate = X["yawRate"]
+
 
 
 
@@ -130,7 +132,7 @@ class PID_CLASS():
                     SPx = new_set_point["x"]
                     SPy = new_set_point["y"]
                     SPz = new_set_point["z"]
-                    print('New setpoint accepted: ',new_set_point)
+                    # print('New setpoint accepted: ',new_set_point)
 
 
                 # Changing setpoint to local coordinates
@@ -156,7 +158,7 @@ class PID_CLASS():
                 roll = self.r_pid.update(-x)
                 pitch = self.p_pid.update(-y)
                 thrust = self.t_pid.update(z)
-                yaw_cmd = self.y_pid.update(0)
+                yaw_cmd = self.y_pid.update(yaw)
 
                 # Saturation control
                 pitch_roll_cap = 30
@@ -203,6 +205,7 @@ class PID_CLASS():
                 if not QueueList["kill"].empty():
                     active = False
                     self.kill()
+                    return
 
                 # if not logQ.full():
                 #     logQ.put(pkt)
@@ -224,7 +227,6 @@ class PID_CLASS():
                 self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
                 print("Kill cmd sent")
                 self.sentKill = True
-                return
             except:
                 pass
 
