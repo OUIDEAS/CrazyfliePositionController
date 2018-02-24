@@ -1,6 +1,8 @@
 import threading
 import time
-import viconClient
+# import viconClient
+
+from utilities import fakeviconClient
 
 
 class viconStream():
@@ -27,8 +29,13 @@ class viconStream():
         thread.start()                                  # Start the execution
 
     def run(self,QueueList):
-        vc = viconClient.viconClient("192.168.0.197",801)
+        # vc = viconClient.viconClient("192.168.0.197",801)
+        # vc.vicon_connect()
+
+        vc = fakeviconClient.fakeviconClient()
         vc.vicon_connect()
+
+
         print("Connected to vicon stream for ",self.name)
         time.sleep(1)
         print("Attempting to rec data for ",self.name)
@@ -49,7 +56,6 @@ class viconStream():
             while self.active:
                 t1 = time.time()
                 X = vc.getPos(self.name)
-                print(X["z"])
                 if X["x"] is not False:
                     self.X["x"] = X["x"]
                     self.X["y"] = X["y"]

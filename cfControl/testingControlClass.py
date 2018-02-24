@@ -7,15 +7,6 @@ uav = cfControlClass('CF_1',(True,'TEST2aBc4'),True)
 
 dt = 0.75
 while uav.active:
-    # uav.takeoff(0.5)
-    # time.sleep(1)
-    # uav.goto(0,0,0.5)
-    # time.sleep(5)
-    # uav.goto(0,1,0.5)
-    # time.sleep(5)
-    # uav.goto(0,0,0.5)
-    # time.sleep(5)
-    # uav.land()
 
 
     uav.takeoff(0.5)
