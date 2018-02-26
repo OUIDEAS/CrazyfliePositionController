@@ -7,6 +7,7 @@ class fakeviconClient():
 
         self.deadPacket = DeadPacket
         self.behavior = Behavior
+        self.ts = time.time()
 
         self.x = 0
         self.y = 0
@@ -24,6 +25,11 @@ class fakeviconClient():
         trans_scale = 1000
         X = {}
         while True:
+
+            DT = time.time()-self.ts
+            if DT>5:
+                self.deadPacket = True
+
             if self.deadPacket:
                 # print('dead packet')
                 x_ENU = False
@@ -34,6 +40,8 @@ class fakeviconClient():
                 X["x"] = x_ENU
                 X["y"] = y_ENU
                 X["z"] = z_ENU
+                t2 = time.time()
+
                 return X
             else:
 
@@ -63,6 +71,5 @@ class fakeviconClient():
             X["z"] = z_ENU
             X["yaw"] = heading
 
-            time.sleep(0.01)
             return X
 

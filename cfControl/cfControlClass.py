@@ -22,25 +22,36 @@ class cfControlClass():
 
         #Queue Dictionary
         self.QueueList = {}
-        self.QueueList["vicon"] = Queue(maxsize=100)
-        self.QueueList["sp"] = Queue(maxsize=10)
-        self.QueueList["log"] = Queue(maxsize=100)
-        self.QueueList["error"] = Queue()
+        self.QueueList["vicon"] = Queue()
+        self.QueueList["sp"] = Queue()
+        self.QueueList["log"] = Queue()
         self.QueueList["kill"] = Queue()
 
-        #Start error monitor thread
-        errorThread = threading.Thread(target=self.errorMonitor,args=(),name='ERROR')
-        errorThread.daemon = True
-        errorThread.start()
+        #Currently used poorly. Updated error queue will be shared with all threads and read by a system monitor.
+        #Errors will be read and recorded
+        #Errors that call for a throttle down or shutdown will send commands to control thread over controlShutDown queue
+        self.QueueList["error"] = Queue()
+        self.QueueList["threadMessage"] = Queue()
+        #Thread message is a dictionary
+        #message = {}
+        #message["message"] = string
+        #message["data"] = other message data
+        #Queue intended to be read by the control class only for two purposes
+        # 1) Throttle down - intended for slow geofence breaches
+        # 2) Kill - Sends 0 on all control variables to shut down motors
+        self.QueueList["controlShutDown"] = Queue
 
-        #Start threads
+        # Startup Proceedure
+        # 1) Message Monitor
+        # 2) Vicon
+        # 3) PID
+
+        thread = threading.Thread(target=self.messageMonitor, args=())
+        thread.daemon = True
+        thread.start()
+
         self.startVicon()
-        time.sleep(2)
-        self.startControl()
 
-
-        # if self.logEnabled ==True:
-        #     self.startLog()
 
 
         if self.printUpdateRate:
@@ -50,6 +61,41 @@ class cfControlClass():
 
 
 
+
+    def messageMonitor(self):
+        print('Starting message monitor')
+        time.sleep(1)
+        while True:
+                try:
+                    message = self.QueueList["threadMessage"].get(block=False)
+                    if message["mess"] == "VICON_CONNECTED":
+                        print(message["mess"], '\t', "Object Name:", str(message["data"]))
+
+                    elif message["mess"] == 'NO_INIT_VICON_DATA':
+                        print(message["mess"], '\t', "Object Name:", str(message["data"]))
+
+                    elif message["mess"] == 'VICON_DATA_FULL':
+                        print(message["mess"], '\t', "Queue size:", str(message["data"]))
+
+                    elif message["mess"] == 'DEAD_PACKET_EXCEEDS_LIMIT':
+                        print(message["mess"], '\t', str(message["data"]))
+
+                        self.cf_vicon.active=False
+
+
+                        self.active = False
+                        time.sleep(0.1)
+                        return
+
+                    else:
+                        print(message)
+                        # print('threadMessage receieved not identified')
+
+
+
+                except:
+                    pass
+                time.sleep(0.01)
 
 
     def errorMonitor(self):
@@ -61,43 +107,36 @@ class cfControlClass():
                 self.QueueList["kill"].put(True)
                 time.sleep(0.1)
                 return
-
-
     def startVicon(self):
         print("Connecting to vicon stream. . .")
         self.cf_vicon = viconStream(self.name,self.QueueList)
         # self.cf_vicon = viconStream(self.name,self.vicon_queue,self.error_queue)
-
-
-
     def startControl(self):
         self.t1 = time.time()
         print("Starting control thread. . .")
         # self.ctrl = PID_CLASS(self.vicon_queue,self.setpoint_queue,self.logger_queue,self.kill_queue)
         self.ctrl = PID_CLASS(self.QueueList)
-
-
-
-
-    def startPlots(self):
-        self.plots = responsePlots()
-
-
     def startLog(self):
         self.logger = logger(self.logger_queue,self.logName)
 
 
 
+#######################################################################################################################
+    # Debugging utilities
+
     def printQ(self):
         while self.active:
-            print('Vicon update rate:',self.cf_vicon.update_rate,'\t','PID update rate:',self.ctrl.update_rate)#,'\t','Log:',self.logger.update_rate,'\t')
+            # print('Vicon update rate:',self.cf_vicon.update_rate,'\t','PID update rate:',self.ctrl.update_rate)#,'\t','Log:',self.logger.update_rate,'\t')
+            print('Vicon update rate:',self.cf_vicon.update_rate)#,'\t','Log:',self.logger.update_rate,'\t')
+
             time.sleep(0.5)
             # os.system('cls')
             # print('Vicon Q:',self.vicon_queue.qsize(),'\t','SP Q:',self.setpoint_queue.qsize(),'\t','Logger Q:',self.logger_queue.qsize(),'time',str(time.time()-self.t1))
 
 
 
-
+#######################################################################################################################
+        #User end functions
 
 
     def takeoff(self,height):
