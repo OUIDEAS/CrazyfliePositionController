@@ -1,6 +1,6 @@
 import threading
 import time
-# import viconClient
+import viconClient
 
 from utilities import fakeviconClient
 
@@ -37,11 +37,12 @@ class viconStream():
         thread.start()
 
     def run(self,QueueList):
-        # vc = viconClient.viconClient("192.168.0.197",801)
-        # vc.vicon_connect()
-
-        vc = fakeviconClient.fakeviconClient()
+        vc = viconClient.viconClient("192.168.0.197",801)
+        # vc = fakeviconClient.fakeviconClient()
         vc.vicon_connect()
+
+
+
         time.sleep(1)
 
         self.message["mess"] = 'VICON_CONNECTED'
@@ -97,7 +98,9 @@ class viconStream():
 
 
         if not self.active:
-            print('deactived')
+            self.message["mess"] = 'VICON_DEACTIVATED'
+            self.message["data"] = self.name
+            QueueList["threadMessage"].put(self.message)
             return
 
 

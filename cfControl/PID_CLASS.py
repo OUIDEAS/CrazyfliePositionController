@@ -7,12 +7,20 @@ import threading
 
 
 class PID_CLASS():
-    def __init__(self,QueueList):
+    def __init__(self,QueueList = {},name = ''):
+
+        self.time_start = time.time()
+        self.name = name
+
+        self.QueueList = QueueList
+
         self.context = zmq.Context()
         self.client_conn = self.context.socket(zmq.PUSH)
         self.client_conn.connect("tcp://127.0.0.1:1212")
 
-        self.time_start = time.time()
+        self.message = {}
+        self.message["mess"] = None
+        self.message["data"] = None
 
         t = threading.Thread(target=self.run,args=(QueueList,),name="PID")
         t.daemon = True
@@ -37,7 +45,7 @@ class PID_CLASS():
             }
         }
 
-        if QueueList["kill"].empty():
+        if QueueList["controlShutdown"].empty():
             active = True
             self.SPx = 0
             self.SPy = 0
@@ -49,13 +57,12 @@ class PID_CLASS():
             self.z = 0
             self.yaw = 0
 
-
-
             self.client_conn.send_json(self.cmd)
-            print('sending release command')
 
-            self.client_conn.send_json(self.cmd)
-            print('sending release command')
+            self.message["mess"] = 'MOTOR_UNLOCK_SENT'
+            self.message["data"] = self.name
+            self.QueueList["threadMessage"].put(self.message)
+
             time.sleep(1)
             # Controller gain default values
             self.rPID_P = 29
@@ -104,6 +111,7 @@ class PID_CLASS():
             #Clear vicon Q before starting
             QueueList["vicon"].get()
 
+
         while active:
             t1 = time.time()
             time.sleep(self.sleep_rate)
@@ -114,6 +122,9 @@ class PID_CLASS():
                 try:
                     X = QueueList["vicon"].get(timeout=0.2)
                 except:
+                    self.message["mess"] = 'VICON_QUEUE_EXCEPTION_ERROR'
+                    self.message["data"] = self.name
+                    self.QueueList["threadMessage"].put(self.message)
                     self.kill()
                     return
 
@@ -124,15 +135,23 @@ class PID_CLASS():
                 yawRate = X["yawRate"]
 
 
-
-
                 if not QueueList["sp"].empty():
                     new_set_point = QueueList["sp"].get()
 
                     SPx = new_set_point["x"]
                     SPy = new_set_point["y"]
                     SPz = new_set_point["z"]
-                    # print('New setpoint accepted: ',new_set_point)
+
+                    self.message["mess"] = 'NEW_SP_ACCEPTED'
+                    self.message["data"] = new_set_point
+                    self.QueueList["threadMessage"].put(self.message)
+
+
+                    #Experimental, may cause unstable flight
+                    self.r_pid.Integrator = 0
+                    self.p_pid.Integrator = 0
+                    self.y_pid.Integrator = 0
+                    self.t_pid.Integrator = 0
 
 
                 # Changing setpoint to local coordinates
@@ -202,9 +221,12 @@ class PID_CLASS():
 
 
 
-                if not QueueList["kill"].empty():
-                    active = False
-                    self.kill()
+                if not self.QueueList["controlShutdown"].empty():
+                    if self.QueueList["controlShutdown"].get() == 'THROTTLE_DOWN':
+                        self.throttleDown()
+                        active = False
+                    else:
+                        self.kill()
                     return
 
                 # if not logQ.full():
@@ -216,7 +238,11 @@ class PID_CLASS():
 
 
     def kill(self):
-        print("Trying to send kill cmd. . .")
+
+        self.message["mess"] = 'ATTEMPTING_TO_SEND_KILL_CMD'
+        self.message["data"] = self.name
+        self.QueueList["threadMessage"].put(self.message)
+
         self.sentKill = False
         while not self.sentKill:
             try:
@@ -225,9 +251,38 @@ class PID_CLASS():
                 self.cmd["ctrl"]["thrust"] = 0
                 self.cmd["ctrl"]["yaw"] = 0
                 self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
-                print("Kill cmd sent")
+
+                self.message["mess"] = 'KILL_CMD_SENT'
+                self.message["data"] = self.name
+                self.QueueList["threadMessage"].put(self.message)
+
                 self.sentKill = True
             except:
                 pass
 
+
+    def throttleDown(self):
+
+        self.message["mess"] = 'THROTTLE_DOWN_START'
+        self.message["data"] = self.name
+        self.QueueList["threadMessage"].put(self.message)
+        time.sleep(0.01)
+
+
+        self.cmd["ctrl"]["roll"] = 0
+        self.cmd["ctrl"]["pitch"] = 0
+        self.cmd["ctrl"]["yaw"] = 0
+
+
+        while self.cmd["ctrl"]["thrust"] > 0:
+            self.cmd["ctrl"]["thrust"] = self.cmd["ctrl"]["thrust"]-1
+            self.client_conn.send_json(self.cmd, zmq.NOBLOCK)
+            time.sleep(0.01)
+
+
+        self.message["mess"] = 'THROTTLE_DOWN_COMPLETE'
+        self.message["data"] = self.name
+        self.QueueList["threadMessage"].put(self.message)
+
+        return
 
