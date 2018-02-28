@@ -13,7 +13,7 @@ class cfControlClass():
     def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
 
         self.time_start=time.time()
-        self.printUpdateRate = True
+        self.printUpdateRate = False
         self.active = True
         #Class Settings
         self.name = uavName
@@ -158,13 +158,13 @@ class cfControlClass():
 
 
     def upDown(self):
-        while True:
-            time.sleep(5)
-            self.takeoff(1)
-            time.sleep(2)
-            self.QueueList["controlShutdown"].put('THROTTLE_DOWN')
-            time.sleep(5)
-            self.land()
+        time.sleep(5)
+        self.takeoff(1)
+        time.sleep(5)
+        self.land()
+        time.sleep(5)
+
+        self.QueueList["controlShutdown"] = 'THROTTLE_DOWN'
 
 
 

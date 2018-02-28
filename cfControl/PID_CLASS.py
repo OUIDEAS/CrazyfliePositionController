@@ -148,10 +148,10 @@ class PID_CLASS():
 
 
                     #Experimental, may cause unstable flight
-                    self.r_pid.Integrator = 0
-                    self.p_pid.Integrator = 0
-                    self.y_pid.Integrator = 0
-                    self.t_pid.Integrator = 0
+                    # self.r_pid.Integrator = 0
+                    # self.p_pid.Integrator = 0
+                    # self.y_pid.Integrator = 0
+                    # self.t_pid.Integrator = 0
 
 
                 # Changing setpoint to local coordinates
@@ -196,8 +196,8 @@ class PID_CLASS():
                 self.cmd["ctrl"]["thrust"] = thrust
                 self.cmd["ctrl"]["yaw"] = -yaw_cmd
 
-                self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
 
+                self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
 
 
                 if self.dispControlMessage:
@@ -250,7 +250,11 @@ class PID_CLASS():
                 self.cmd["ctrl"]["pitch"] = 0
                 self.cmd["ctrl"]["thrust"] = 0
                 self.cmd["ctrl"]["yaw"] = 0
+
+
                 self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
+
+
 
                 self.message["mess"] = 'KILL_CMD_SENT'
                 self.message["data"] = self.name
