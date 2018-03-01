@@ -148,8 +148,8 @@ class PID_CLASS():
 
 
                     #Experimental, may cause unstable flight
-                    # self.r_pid.Integrator = 0
-                    # self.p_pid.Integrator = 0
+                    self.r_pid.Integrator = 0
+                    self.p_pid.Integrator = 0
                     # self.y_pid.Integrator = 0
                     # self.t_pid.Integrator = 0
 
@@ -277,11 +277,13 @@ class PID_CLASS():
         self.cmd["ctrl"]["pitch"] = 0
         self.cmd["ctrl"]["yaw"] = 0
 
+        if self.cmd["ctrl"]["thrust"]>50:
+            self.cmd["ctrl"]["thrust"] = 50
 
         while self.cmd["ctrl"]["thrust"] > 0:
             self.cmd["ctrl"]["thrust"] = self.cmd["ctrl"]["thrust"]-1
             self.client_conn.send_json(self.cmd, zmq.NOBLOCK)
-            time.sleep(0.01)
+            time.sleep(0.05)
 
 
         self.message["mess"] = 'THROTTLE_DOWN_COMPLETE'

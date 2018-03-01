@@ -58,9 +58,18 @@ class cfControlClass():
         time.sleep(3)
         self.startControl()
 
-        updown = threading.Thread(target=self.upDown,args=())
-        updown.daemon = True
-        updown.start()
+        # updown = threading.Thread(target=self.upDown,args=())
+        # updown.daemon = True
+        # updown.start()
+
+        if self.printUpdateRate:
+            t = threading.Thread(target=self.printQ,args=())
+            t.daemon = True
+            t.start()
+
+        # grid = threading.Thread(target=self.gridFlight(),args=())
+        # grid.daemon = True
+        # grid.start()
 
 
         if self.printUpdateRate:
@@ -156,15 +165,35 @@ class cfControlClass():
             # os.system('cls')
 
 
+    def gridFlight(self):
+        time.sleep(5)
+        self.takeoff(0.5)
+        time.sleep(2)
+        self.goto(1,0,0.5)
+        time.sleep(1)
+        self.goto(1,1,0.5)
+        time.sleep(1)
+        self.goto(0,1,0.5)
+        time.sleep(1)
+        self.goto(0,0,0.5)
+        time.sleep(2)
+        self.land()
+
+        self.QueueList["controlShutdown"].put('THROTTLE_DOWN')
 
 
     def upDown(self):
         time.sleep(5)
-        self.takeoff(1.25)
+        self.takeoff(1)
         time.sleep(10)
         self.land()
-
         self.QueueList["controlShutdown"].put('THROTTLE_DOWN')
+
+        # time.sleep(5)
+        # self.takeoff(0.5)
+        # time.sleep(10)
+        # self.QueueList["controlShutdown"].put('KILL')
+
 
 
 
@@ -183,17 +212,15 @@ class cfControlClass():
     def land(self):
         sp = {}
         X = self.QueueList["vicon"].get()
-        sp["x"] = X["x"]
-        sp["y"] = X["y"]
+        # sp["x"] = X["x"]
+        # sp["y"] = X["y"]
+        sp["x"] = 0
+        sp["y"] = 0
         sp["z"] = X["z"]
         while sp["z"]>0:
-            sp["z"] = sp["z"]-0.01
-
+            sp["z"] = sp["z"]-0.005
             self.QueueList["sp"].put(sp)
-
-            X = self.QueueList["vicon"].get()
-
-            time.sleep(0.03)
+            time.sleep(0.01)
 
         # self.QueueList["kill"].put(True)
 
