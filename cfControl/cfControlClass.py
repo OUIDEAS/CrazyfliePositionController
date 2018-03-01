@@ -24,21 +24,8 @@ class cfControlClass():
         self.QueueList = {}
         self.QueueList["vicon"] = Queue(maxsize=10)
         self.QueueList["sp"] = Queue()
-        self.QueueList["log"] = Queue()
-
-
-        #Currently used poorly. Updated error queue will be shared with all threads and read by a system monitor.
-        #Errors will be read and recorded
-        #Errors that call for a throttle down or shutdown will send commands to control thread over controlShutDown queue
-
+        self.QueueList["dataLogger"] = Queue()
         self.QueueList["threadMessage"] = Queue()
-        #Thread message is a dictionary
-        #message = {}
-        #message["message"] = string
-        #message["data"] = other message data
-        #Queue intended to be read by the control class only for two purposes
-        # 1) Throttle down - intended for slow geofence breaches
-        # 2) Kill - Sends 0 on all control variables to shut down motors
         self.QueueList["controlShutdown"] = Queue()
 
 
@@ -53,7 +40,8 @@ class cfControlClass():
         thread.start()
 
 
-
+        self.startLog()
+        time.sleep(1)
         self.startVicon()
         time.sleep(3)
         self.startControl()
@@ -149,7 +137,7 @@ class cfControlClass():
         self.ctrl = PID_CLASS(self.QueueList,self.name)
 
     def startLog(self):
-        self.logger = logger(self.logger_queue,self.logName)
+        self.logger = logger(self.logName,self.QueueList)
 
 
 

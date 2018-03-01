@@ -1,10 +1,9 @@
 from cfControlClass import cfControlClass
 
-
 import threading
 import time
 
-uav = cfControlClass('CF_1',(True,'TEST2aBc4'),True)
+uav = cfControlClass('CF_1',(True,'ExampeDataLog'),True)
 
 while uav.active:
 

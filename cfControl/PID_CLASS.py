@@ -219,7 +219,7 @@ class PID_CLASS():
                     "yaw_sp": SP_yaw,
                 }
 
-
+                self.QueueList["dataLogger"].put(pkt)
 
                 if not self.QueueList["controlShutdown"].empty():
                     if self.QueueList["controlShutdown"].get() == 'THROTTLE_DOWN':
