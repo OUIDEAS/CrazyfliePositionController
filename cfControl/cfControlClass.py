@@ -5,7 +5,7 @@ import threading
 
 from PID_CLASS import PID_CLASS
 from viconStream import viconStream
-# from responsePlots import responsePlots
+from responsePlots import responsePlots
 from logger import logger
 
 
@@ -13,7 +13,9 @@ class cfControlClass():
     def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
 
         self.time_start=time.time()
-        self.printUpdateRate = False
+        self.printUpdateRate = True
+        self.displayMessageMonitor = False
+
         self.active = True
         #Class Settings
         self.name = uavName
@@ -44,7 +46,10 @@ class cfControlClass():
         time.sleep(1)
         self.startVicon()
         time.sleep(3)
+
         self.startControl()
+        time.sleep(1)
+        self.startPlots()
 
         # updown = threading.Thread(target=self.upDown,args=())
         # updown.daemon = True
@@ -72,6 +77,7 @@ class cfControlClass():
         while True:
                 try:
                     message = self.QueueList["threadMessage"].get(block=False)
+
                     if message["mess"] == "VICON_CONNECTED":
                         print(message["mess"], '\t', "Object Name:", str(message["data"]))
 
@@ -138,6 +144,9 @@ class cfControlClass():
 
     def startLog(self):
         self.logger = logger(self.logName,self.QueueList)
+
+    def startPlots(self):
+        self.Plots = responsePlots(self.QueueList)
 
 
 

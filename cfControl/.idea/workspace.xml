@@ -15,7 +15,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="testingControlClass.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="testingControlClass.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/testingControlClass.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="17">
@@ -28,13 +28,24 @@
       <file leaf-file-name="cfControlClass.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cfControlClass.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-521">
-              <caret line="34" column="18" lean-forward="true" selection-start-line="34" selection-start-column="18" selection-end-line="34" selection-end-column="18" />
+            <state relative-caret-position="70">
+              <caret line="79" column="0" lean-forward="false" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
-                <element signature="e#1775#4095#0" expanded="false" />
-                <marker date="1519872215413" expanded="true" signature="331:754" ph="..." />
-                <marker date="1519872215413" expanded="true" signature="6569:6602" ph="..." />
+                <marker date="1519874061183" expanded="true" signature="329:795" ph="..." />
+                <marker date="1519874061183" expanded="true" signature="6738:6771" ph="..." />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="responsePlots.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/responsePlots.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-527">
+              <caret line="20" column="34" lean-forward="true" selection-start-line="20" selection-start-column="34" selection-end-line="20" selection-end-column="34" />
+              <folding>
+                <element signature="e#0#16#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -52,11 +63,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="PID_CLASS.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="PID_CLASS.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/PID_CLASS.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="215">
-              <caret line="221" column="42" lean-forward="false" selection-start-line="221" selection-start-column="32" selection-end-line="221" selection-end-column="42" />
+            <state relative-caret-position="283">
+              <caret line="221" column="55" lean-forward="false" selection-start-line="221" selection-start-column="55" selection-end-line="221" selection-end-column="55" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -128,18 +139,18 @@
         <option value="$PROJECT_DIR$/cfControl.py" />
         <option value="$PROJECT_DIR$/../../Wambold/crazyfliepos/cfControl/kctrl_CoordinateTransform.py" />
         <option value="$PROJECT_DIR$/plots.py" />
-        <option value="$PROJECT_DIR$/responsePlots.py" />
         <option value="$PROJECT_DIR$/test.txt" />
         <option value="$PROJECT_DIR$/utilities/fakeVicon.py" />
         <option value="$PROJECT_DIR$/viconClient.py" />
         <option value="$PROJECT_DIR$/utilities/fakeviconClient.py" />
         <option value="$PROJECT_DIR$/messageMonitor.py" />
         <option value="$PROJECT_DIR$/viconStream.py" />
-        <option value="$PROJECT_DIR$/PID_CLASS.py" />
-        <option value="$PROJECT_DIR$/cfControlClass.py" />
         <option value="$PROJECT_DIR$/logger.py" />
         <option value="$PROJECT_DIR$/TEST2aBc4.txt" />
         <option value="$PROJECT_DIR$/testingControlClass.py" />
+        <option value="$PROJECT_DIR$/responsePlots.py" />
+        <option value="$PROJECT_DIR$/cfControlClass.py" />
+        <option value="$PROJECT_DIR$/PID_CLASS.py" />
       </list>
     </option>
   </component>
@@ -343,7 +354,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="754" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18532526" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -351,11 +361,11 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32850242" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32850242" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.35748792" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.34138486" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.24962178" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32850242" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.36997885" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38969404" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Data View" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -401,6 +411,11 @@
           <line>10</line>
           <option name="timeStamp" value="24" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/responsePlots.py</url>
+          <line>127</line>
+          <option name="timeStamp" value="86" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -409,7 +424,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="83" />
+      <option name="time" value="87" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -427,9 +442,8 @@
           <caret line="83" column="21" lean-forward="true" selection-start-line="83" selection-start-column="21" selection-end-line="83" selection-end-column="21" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
-            <element signature="e#1775#4095#0" expanded="false" />
-            <marker date="1519872215413" expanded="true" signature="331:754" ph="..." />
-            <marker date="1519872215413" expanded="true" signature="6569:6602" ph="..." />
+            <marker date="1519874061183" expanded="true" signature="329:795" ph="..." />
+            <marker date="1519874061183" expanded="true" signature="6738:6771" ph="..." />
           </folding>
         </state>
       </provider>
@@ -466,9 +480,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#11#0" expanded="true" />
-            <element signature="e#1775#4095#0" expanded="false" />
-            <marker date="1519872215413" expanded="true" signature="331:754" ph="..." />
-            <marker date="1519872215413" expanded="true" signature="6569:6602" ph="..." />
+            <marker date="1519874061183" expanded="true" signature="329:795" ph="..." />
+            <marker date="1519874061183" expanded="true" signature="6738:6771" ph="..." />
           </folding>
         </state>
       </provider>
@@ -620,13 +633,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/responsePlots.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1343">
-          <caret line="56" column="0" lean-forward="true" selection-start-line="56" selection-start-column="0" selection-end-line="56" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Miniconda3/envs/cfclient/Lib/site-packages/python_vicon/pyvicon_class.py" />
     <entry file="file://$PROJECT_DIR$/utilities/fakeVicon.py" />
     <entry file="file://$PROJECT_DIR$/viconClient.py">
@@ -639,31 +645,18 @@
     <entry file="file://$USER_HOME$/Miniconda3/Lib/threading.py" />
     <entry file="file://$PROJECT_DIR$/utilities/fakeviconClient.py" />
     <entry file="file://$PROJECT_DIR$/messageMonitor.py" />
-    <entry file="file://$PROJECT_DIR$/viconStream.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
-          <caret line="31" column="31" lean-forward="false" selection-start-line="31" selection-start-column="31" selection-end-line="31" selection-end-column="31" />
-          <folding>
-            <element signature="e#0#16#0" expanded="true" />
-            <marker date="1519865894099" expanded="true" signature="930:934" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/PID_CLASS.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="215">
-          <caret line="221" column="42" lean-forward="false" selection-start-line="221" selection-start-column="32" selection-end-line="221" selection-end-column="42" />
-          <folding>
-            <element signature="e#0#18#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/TEST2aBc4.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/testingControlClass.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -678,24 +671,46 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/cfControlClass.py">
+    <entry file="file://$PROJECT_DIR$/responsePlots.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-521">
-          <caret line="34" column="18" lean-forward="true" selection-start-line="34" selection-start-column="18" selection-end-line="34" selection-end-column="18" />
+        <state relative-caret-position="-527">
+          <caret line="20" column="34" lean-forward="true" selection-start-line="20" selection-start-column="34" selection-end-line="20" selection-end-column="34" />
           <folding>
-            <element signature="e#0#11#0" expanded="true" />
-            <element signature="e#1775#4095#0" expanded="false" />
-            <marker date="1519872215413" expanded="true" signature="331:754" ph="..." />
-            <marker date="1519872215413" expanded="true" signature="6569:6602" ph="..." />
+            <element signature="e#0#16#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/testingControlClass.py">
+    <entry file="file://$PROJECT_DIR$/cfControlClass.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="1" column="0" lean-forward="true" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="70">
+          <caret line="79" column="0" lean-forward="false" selection-start-line="79" selection-start-column="0" selection-end-line="79" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#11#0" expanded="true" />
+            <marker date="1519874061183" expanded="true" signature="329:795" ph="..." />
+            <marker date="1519874061183" expanded="true" signature="6738:6771" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/viconStream.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="31" column="31" lean-forward="false" selection-start-line="31" selection-start-column="31" selection-end-line="31" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#16#0" expanded="true" />
+            <marker date="1519865894099" expanded="true" signature="930:934" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/PID_CLASS.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="283">
+          <caret line="221" column="55" lean-forward="false" selection-start-line="221" selection-start-column="55" selection-end-line="221" selection-end-column="55" />
+          <folding>
+            <element signature="e#0#18#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

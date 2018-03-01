@@ -219,7 +219,7 @@ class PID_CLASS():
                     "yaw_sp": SP_yaw,
                 }
 
-                self.QueueList["dataLogger"].put(pkt)
+                self.QueueList["dataLogger"].put_nowait(pkt)
 
                 if not self.QueueList["controlShutdown"].empty():
                     if self.QueueList["controlShutdown"].get() == 'THROTTLE_DOWN':
@@ -232,10 +232,8 @@ class PID_CLASS():
                 # if not logQ.full():
                 #     logQ.put(pkt)
                 # print(self.update_rate)
-
-            except ValueError:
-                pass
-
+            except Exception as ex:
+                print(ex)
 
     def kill(self):
 
