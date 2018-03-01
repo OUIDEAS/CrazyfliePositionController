@@ -22,7 +22,7 @@ class cfControlClass():
 
         #Queue Dictionary
         self.QueueList = {}
-        self.QueueList["vicon"] = Queue()
+        self.QueueList["vicon"] = Queue(maxsize=10)
         self.QueueList["sp"] = Queue()
         self.QueueList["log"] = Queue()
 
@@ -82,7 +82,8 @@ class cfControlClass():
                         print(message["mess"], '\t', "Object Name:", str(message["data"]))
 
                     elif message["mess"] == 'VICON_DATA_FULL':
-                        print(message["mess"], '\t', "Queue size:", str(message["data"]))
+                        # print(message["mess"], '\t', "Queue size:", str(message["data"]))
+                        pass
 
                     elif message["mess"] == 'DEAD_PACKET_EXCEEDS_LIMIT':
                         print(message["mess"], '\t', str(message["data"]))
@@ -159,12 +160,11 @@ class cfControlClass():
 
     def upDown(self):
         time.sleep(5)
-        self.takeoff(1)
-        time.sleep(5)
+        self.takeoff(1.25)
+        time.sleep(10)
         self.land()
-        time.sleep(5)
 
-        self.QueueList["controlShutdown"] = 'THROTTLE_DOWN'
+        self.QueueList["controlShutdown"].put('THROTTLE_DOWN')
 
 
 
@@ -188,8 +188,12 @@ class cfControlClass():
         sp["z"] = X["z"]
         while sp["z"]>0:
             sp["z"] = sp["z"]-0.01
+
             self.QueueList["sp"].put(sp)
-            time.sleep(0.1)
+
+            X = self.QueueList["vicon"].get()
+
+            time.sleep(0.03)
 
         # self.QueueList["kill"].put(True)
 

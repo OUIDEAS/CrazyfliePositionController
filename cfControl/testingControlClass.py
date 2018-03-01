@@ -7,7 +7,7 @@ import time
 uav = cfControlClass('CF_1',(True,'TEST2aBc4'),True)
 
 while uav.active:
-    time.sleep(0.01)
+    time.sleep(1)
     pass
 
 print('dead')

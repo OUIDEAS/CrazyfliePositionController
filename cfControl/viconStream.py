@@ -29,7 +29,7 @@ class viconStream():
         self.message["mess"] = None
         self.message["data"] = None
 
-        self.sleep_rate = 0.001
+        self.sleep_rate = 0.005
         self.update_rate = []
 
         thread = threading.Thread(target=self.run, args=(QueueList,),name="VICON")
