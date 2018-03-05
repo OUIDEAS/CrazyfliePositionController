@@ -3,39 +3,21 @@ from cfControlClass import cfControlClass
 import threading
 import time
 
-uav = cfControlClass('CF_1',(True,'ExampeDataLog'),True)
+uav = cfControlClass('CF_3',(True,'LandTest'),True)
 
 while uav.active:
 
     time.sleep(5)           #Give threads time to initialize
-
-    dt = 2
-
-    uav.takeoff(0.5)        #Quad takeoff to 0.5 meters
-    time.sleep(2)
-    uav.goto(1, 0, 0.5)
-    time.sleep(dt)
-    print(uav.QueueList["vicon"].get())
-    # uav.goto(1, 1, 0.5)
-    # time.sleep(dt)
-    # uav.goto(0, 1, 0.5)
-    # time.sleep(dt)
-    # uav.goto(-1, 1, 0.5)
-    # time.sleep(dt)
-    # uav.goto(-1, 0, 0.5)
-    # time.sleep(dt)
-    # uav.goto(-1, -1, 0.5)
-    # time.sleep(dt)
-    # uav.goto(0, -1, 0.5)
-    # time.sleep(dt)
-    # uav.goto(1, -1, 0.5)
-    # time.sleep(2)
-    uav.goto(0, 0, 0.5)
+    uav.takeoff(0.5)
+    time.sleep(5)
+    uav.goto(0.5,0.5,0.5)
+    # time.sleep(5)
+    # uav.goto(0,0,1)
     time.sleep(5)
     uav.land()
-    print(uav.QueueList["vicon"].get())
 
-    uav.QueueList["controlShutdown"].put('THROTTLE_DOWN')       #Send throttle down message to control thread
+
+    uav.QueueList["controlShutdown"].put('KILL')       #Send throttle down message to control thread
 
 print('dead')
 

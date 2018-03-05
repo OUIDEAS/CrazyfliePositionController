@@ -13,7 +13,7 @@ class cfControlClass():
     def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
 
         self.time_start=time.time()
-        self.printUpdateRate = True
+        self.printUpdateRate = False
         self.displayMessageMonitor = False
 
         self.active = True
@@ -49,7 +49,7 @@ class cfControlClass():
 
         self.startControl()
         time.sleep(1)
-        self.startPlots()
+        # self.startPlots()
 
         # updown = threading.Thread(target=self.upDown,args=())
         # updown.daemon = True
@@ -211,8 +211,8 @@ class cfControlClass():
         X = self.QueueList["vicon"].get()
         # sp["x"] = X["x"]
         # sp["y"] = X["y"]
-        sp["x"] = 0
-        sp["y"] = 0
+        sp["x"] = X["x"]
+        sp["y"] = X["y"]
         sp["z"] = X["z"]
         while sp["z"]>0:
             sp["z"] = sp["z"]-0.005
