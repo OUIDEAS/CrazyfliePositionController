@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 class fakeviconClient():
-    def __init__(self,DeadPacket=False,Behavior='Static'):
+    def __init__(self,DeadPacket=False,Behavior='circle'):
 
 
         self.deadPacket = DeadPacket
@@ -15,7 +15,7 @@ class fakeviconClient():
         self.angle = 0
         self.d_angle = np.deg2rad(5)
 
-        self.r = 1
+        self.r = 10
 
 
     def vicon_connect(self):
@@ -27,8 +27,8 @@ class fakeviconClient():
         while True:
 
             DT = time.time()-self.ts
-            if DT>5:
-                self.deadPacket = True
+            # if DT>5:
+            #     self.deadPacket = True
 
             if self.deadPacket:
                 # print('dead packet')

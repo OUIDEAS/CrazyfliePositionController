@@ -7,6 +7,7 @@ from PID_CLASS import PID_CLASS
 from viconStream import viconStream
 from responsePlots import responsePlots
 from logger import logger
+from waypointManager import waypointManager
 
 
 class cfControlClass():
@@ -51,6 +52,8 @@ class cfControlClass():
         time.sleep(1)
         # self.startPlots()
 
+        self.startWaypointManager()
+
         # updown = threading.Thread(target=self.upDown,args=())
         # updown.daemon = True
         # updown.start()
@@ -65,10 +68,16 @@ class cfControlClass():
         # grid.start()
 
 
+
+
         if self.printUpdateRate:
             t = threading.Thread(target=self.printQ,args=())
             t.daemon = True
             t.start()
+
+
+    def startWaypointManager(self):
+        self.waypointManager = waypointManager(self.name,self.QueueList)
 
 
     def messageMonitor(self):
@@ -94,8 +103,6 @@ class cfControlClass():
 
                     elif message["mess"] == 'VICON_DEACTIVATED':
                         print(message["mess"], '\t', str(message["data"]))
-
-
 
                     #Control messages
                     elif message["mess"] == 'MOTOR_UNLOCK_SENT':
