@@ -3,10 +3,10 @@ from cfControlClass import cfControlClass
 import threading
 import time
 
-uav = cfControlClass('CF_3',(True,'LandTest'),True)
+uav = cfControlClass('TRACKER_STICK',(False,'LandTest'),True)
 
 while uav.active:
-    time.sleep(10)
+    time.sleep(60)
     uav.QueueList["controlShutdown"].put('KILL')       #Send throttle down message to control thread
 
 print('dead')

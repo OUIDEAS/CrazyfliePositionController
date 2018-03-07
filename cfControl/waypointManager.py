@@ -22,20 +22,26 @@ class waypointManager():
 
 
     def run(self):
-        WPradius = 20
+        WPradius = .25
         L = 2 * WPradius + 10
 
         WPx = []
         WPy = []
 
-        WPx.append(100)
+        WPx.append(0)
         WPy.append(0)
 
-        WPx.append(100)
-        WPy.append(100)
+        WPx.append(1)
+        WPy.append(1)
 
-        WPx.append(0)
-        WPy.append(100)
+        WPx.append(-1)
+        WPy.append(1)
+
+        WPx.append(-1)
+        WPy.append(-1)
+
+        WPx.append(1)
+        WPy.append(-1)
 
         wptx = WPx[self.currentWP]
         wpty = WPy[self.currentWP]
@@ -71,6 +77,9 @@ class waypointManager():
                                                     # the distance from the UAV to the Waypoint...
                     if UAVtoWPT <= WPradius:   # ...and the distance from the UAV to the Waypoint is less than the specified radius
                         self.currentWP = self.currentWP + 1  # change to the next Waypoint
+                        self.message["mess"] = 'WAYPOINT_REACHED'
+                        self.message["data"] = self.name
+                        self.QueueList["threadMessage"].put(self.message)
                         wptx = WPx[self.currentWP]
                         wpty = WPy[self.currentWP]
                         self.sp["x"] = wptx

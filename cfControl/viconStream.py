@@ -37,8 +37,8 @@ class viconStream():
         thread.start()
 
     def run(self,QueueList):
-        # vc = viconClient.viconClient("192.168.0.197",801)
-        vc = fakeviconClient.fakeviconClient()
+        vc = viconClient.viconClient("192.168.0.197",801)
+        # vc = fakeviconClient.fakeviconClient()
         vc.vicon_connect()
 
 
