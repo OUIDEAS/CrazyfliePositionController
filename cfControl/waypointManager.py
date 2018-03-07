@@ -22,7 +22,7 @@ class waypointManager():
 
 
     def run(self):
-        WPradius = .25
+        WPradius = .20
         L = 2 * WPradius + 10
 
         WPx = []
