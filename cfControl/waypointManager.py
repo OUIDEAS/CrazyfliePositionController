@@ -23,12 +23,16 @@ class waypointManager():
 
 
     def run(self):
+<<<<<<< HEAD
 
         self.message["mess"] = 'WAYPOINT_MANAGER_START'
         self.message["data"] = self.name
         self.QueueList["threadMessage"].put(self.message)
 
         WPradius = .2
+=======
+        WPradius = .20
+>>>>>>> 68ca63005cef1e762edd8053c74456e78324bf95
         L = 2 * WPradius + 10
 
         WPx = []
