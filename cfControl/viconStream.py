@@ -83,6 +83,9 @@ class viconStream():
                 else:
                     QueueList["vicon"].put(self.X)
 
+                    if not QueueList["vicon_utility"].full():
+                        QueueList["vicon_utility"].put(self.X)
+
             else:
                 self.DeadPacketCount = self.DeadPacketCount + 1
                 if self.DeadPacketCount >= self.MaxDeadPackets:

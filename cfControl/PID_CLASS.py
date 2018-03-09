@@ -31,7 +31,7 @@ class PID_CLASS():
         # Options
         self.dispControlMessage = False
 
-        self.sleep_rate = 0.0001
+        self.sleep_rate = 0.005
         self.update_rate = []
 
         self.cmd = {
@@ -67,17 +67,17 @@ class PID_CLASS():
             # Controller gain default values
             self.rPID_P = 29
             self.rPID_I = 2.5
-            self.rPID_D = 15
+            self.rPID_D = 19
             self.rPID_set_point = 0
 
             self.pPID_P = 29
             self.pPID_I = 2.5
-            self.pPID_D = 15
+            self.pPID_D = 19
             self.pPID_set_point = 0
 
             self.yPID_P = 80
             self.yPID_I = 20
-            self.yPID_D = 15
+            self.yPID_D = 40
 
             self.tPID_P = 45
             self.tPID_I = 120
@@ -113,14 +113,18 @@ class PID_CLASS():
 
 
         while active:
+
             t1 = time.time()
-            time.sleep(self.sleep_rate)
             try:
+
+                # print(QueueList["vicon"].qsize())
+
                 if QueueList["vicon"].full():
                     pass
 
                 try:
-                    X = QueueList["vicon"].get(timeout=0.2)
+                    X = QueueList["vicon"].get()
+
                 except:
                     self.message["mess"] = 'VICON_QUEUE_EXCEPTION_ERROR'
                     self.message["data"] = self.name
@@ -148,8 +152,8 @@ class PID_CLASS():
 
 
                     #Experimental, may cause unstable flight
-                    self.r_pid.Integrator = 0
-                    self.p_pid.Integrator = 0
+                    # self.r_pid.Integrator = 0
+                    # self.p_pid.Integrator = 0
                     # self.y_pid.Integrator = 0
                     # self.t_pid.Integrator = 0
 
@@ -179,8 +183,10 @@ class PID_CLASS():
                 thrust = self.t_pid.update(z)
                 yaw_cmd = self.y_pid.update(yaw)
 
+
                 # Saturation control
-                pitch_roll_cap = 30
+                pitch_roll_cap = 10
+
                 if thrust > 100:
                     thrust = 100
                 elif thrust < 0:
@@ -197,13 +203,17 @@ class PID_CLASS():
                 self.cmd["ctrl"]["yaw"] = -yaw_cmd
 
 
-                self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
+                # self.client_conn.send_json(self.cmd,zmq.NOBLOCK)
+                self.client_conn.send_json(self.cmd)
+                time.sleep(self.sleep_rate)
+
 
 
                 if self.dispControlMessage:
                     print("Roll:", "{0:.3f}".format(self.cmd["ctrl"]["roll"]), "\t","Pitch:", "{0:.3f}".format(self.cmd["ctrl"]["pitch"]), "\t","Yaw:", "{0:.3f}".format(self.cmd["ctrl"]["yaw"]), "\t","Thrust:", "{0:.3f}".format(self.cmd["ctrl"]["thrust"]))
 
                 t2 = time.time()
+
                 self.update_rate = 1 / (t2 - t1)
 
                 #Log packet

@@ -1,5 +1,6 @@
 import threading
 import numpy as np
+import time
 
 class waypointManager():
 
@@ -9,7 +10,7 @@ class waypointManager():
         # self.WPradius = WPradius
         self.QueueList = QueueList
         self.currentWP = 0
-        self.sleep_rate = 0.05
+        self.sleep_rate = 0.1
         self.message = {}
         self.active = True
         self.sp = {}
@@ -22,39 +23,45 @@ class waypointManager():
 
 
     def run(self):
-        WPradius = .25
+
+        self.message["mess"] = 'WAYPOINT_MANAGER_START'
+        self.message["data"] = self.name
+        self.QueueList["threadMessage"].put(self.message)
+
+        WPradius = .2
         L = 2 * WPradius + 10
 
         WPx = []
         WPy = []
 
+        WPx.append(0.5)
+        WPy.append(0.5)
+
+        WPx.append(-0.5)
+        WPy.append(0.5)
+
+        WPx.append(-1/2)
+        WPy.append(-1/2)
+
+        WPx.append(1/2)
+        WPy.append(-1/2)
+
         WPx.append(0)
         WPy.append(0)
-
-        WPx.append(1)
-        WPy.append(1)
-
-        WPx.append(-1)
-        WPy.append(1)
-
-        WPx.append(-1)
-        WPy.append(-1)
-
-        WPx.append(1)
-        WPy.append(-1)
 
         wptx = WPx[self.currentWP]
         wpty = WPy[self.currentWP]
 
         self.sp["x"] = wptx
         self.sp["y"] = wpty
-        self.sp["z"] = 0
+        self.sp["z"] = 0.5
         self.QueueList["sp"].put(self.sp)
 
         while self.active:
+            time.sleep(self.sleep_rate)
             wptx = WPx[self.currentWP]
             wpty = WPy[self.currentWP]
-            X = self.QueueList["vicon"].get()
+            X = self.QueueList["vicon_utility"].get()
             x = X["x"]
             y = X["y"]
 
@@ -76,16 +83,28 @@ class waypointManager():
                 if DUMMYtoWPT >= UAVtoWPT:          # if the distance from the Dummy Point to the waypoint is greater than
                                                     # the distance from the UAV to the Waypoint...
                     if UAVtoWPT <= WPradius:   # ...and the distance from the UAV to the Waypoint is less than the specified radius
-                        self.currentWP = self.currentWP + 1  # change to the next Waypoint
-                        self.message["mess"] = 'WAYPOINT_REACHED'
-                        self.message["data"] = self.name
-                        self.QueueList["threadMessage"].put(self.message)
-                        wptx = WPx[self.currentWP]
-                        wpty = WPy[self.currentWP]
-                        self.sp["x"] = wptx
-                        self.sp["y"] = wpty
-                        self.sp["z"] = 0
-                        self.QueueList["sp"].put(self.sp)
+                        if not self.currentWP == len(WPx)-1:
+                            self.message["mess"] = 'WAYPOINT_REACHED'
+                            self.message["data"] = self.name
+                            self.QueueList["threadMessage"].put(self.message)
+                            self.currentWP = self.currentWP + 1  # change to the next Waypoint
+                            wptx = WPx[self.currentWP]
+                            wpty = WPy[self.currentWP]
+                            self.sp["x"] = wptx
+                            self.sp["y"] = wpty
+                            self.sp["z"] = 0.5
+                            self.QueueList["sp"].put(self.sp,block=False)
+                        else:
+                            self.active = False
+                            self.message["mess"] = 'LAST_WAYPOINT_REACHED'
+                            self.message["data"] = self.name
+                            self.QueueList["threadMessage"].put(self.message)
 
             except:
                 print("waypointManager exception met")
+
+        self.message["mess"] = 'WAYPOINT_FOLLOWING_COMPLETE'
+        self.message["data"] = self.name
+        self.QueueList["threadMessage"].put(self.message)
+
+        print("WAYPOINT FOLLOWING COMPLETE")

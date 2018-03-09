@@ -14,7 +14,7 @@ class cfControlClass():
     def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
 
         self.time_start=time.time()
-        self.printUpdateRate = False
+        self.printUpdateRate = True
         self.displayMessageMonitor = False
 
         self.active = True
@@ -25,7 +25,8 @@ class cfControlClass():
 
         #Queue Dictionary
         self.QueueList = {}
-        self.QueueList["vicon"] = Queue(maxsize=10)
+        self.QueueList["vicon"] = Queue(maxsize=20)
+        self.QueueList["vicon_utility"] = Queue(maxsize=1)
         self.QueueList["sp"] = Queue()
         self.QueueList["dataLogger"] = Queue()
         self.QueueList["threadMessage"] = Queue()
@@ -52,7 +53,7 @@ class cfControlClass():
         time.sleep(1)
         # self.startPlots()
 
-        self.startWaypointManager()
+        # self.startWaypointManager()
 
         # updown = threading.Thread(target=self.upDown,args=())
         # updown.daemon = True
@@ -130,6 +131,8 @@ class cfControlClass():
                     elif message["mess"] == 'THROTTLE_DOWN_COMPLETE':
                         print(message["mess"], '\t', "Object Name:", str(message["data"]))
 
+                    elif message["mess"] == 'WAYPOINT_FOLLOWING_COMPLETE':
+                        print(message["mess"], '\t', "Object Name:", str(message["data"]))
                     else:
                         print(message)
                 except:
@@ -221,13 +224,10 @@ class cfControlClass():
         sp["x"] = X["x"]
         sp["y"] = X["y"]
         sp["z"] = X["z"]
-        while sp["z"]>0:
-            sp["z"] = sp["z"]-0.005
+        while sp["z"]>0.1:
+            sp["z"] = sp["z"]-0.001
             self.QueueList["sp"].put(sp)
             time.sleep(0.01)
-
-        # self.QueueList["kill"].put(True)
-
 
     def goto(self,x,y,z):
         sp = {}
