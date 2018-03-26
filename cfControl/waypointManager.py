@@ -23,36 +23,47 @@ class waypointManager():
 
 
     def run(self):
-<<<<<<< HEAD
 
         self.message["mess"] = 'WAYPOINT_MANAGER_START'
         self.message["data"] = self.name
         self.QueueList["threadMessage"].put(self.message)
 
-        WPradius = .2
-=======
         WPradius = .20
->>>>>>> 68ca63005cef1e762edd8053c74456e78324bf95
+
         L = 2 * WPradius + 10
+
+########################################################################################################################
+        # opens the text file containing the waypoints and puts them into the list 'waypoint'
+        with open("wpts.txt") as file:
+            waypoint = []
+            for line in file:
+                waypoint.append(line.rstrip().split(","))
 
         WPx = []
         WPy = []
 
-        WPx.append(0.5)
-        WPy.append(0.5)
+        for x in range(0, len(waypoint)):
+            WPx.append(int(waypoint[x][0]))
+            WPy.append(int(waypoint[x][1]))
 
-        WPx.append(-0.5)
-        WPy.append(0.5)
-
-        WPx.append(-1/2)
-        WPy.append(-1/2)
-
-        WPx.append(1/2)
-        WPy.append(-1/2)
-
-        WPx.append(0)
-        WPy.append(0)
-
+        # WPx = []
+        # WPy = []
+        #
+        # WPx.append(0.5)
+        # WPy.append(0.5)
+        #
+        # WPx.append(-0.5)
+        # WPy.append(0.5)
+        #
+        # WPx.append(-1/2)
+        # WPy.append(-1/2)
+        #
+        # WPx.append(1/2)
+        # WPy.append(-1/2)
+        #
+        # WPx.append(0)
+        # WPy.append(0)
+########################################################################################################################
         wptx = WPx[self.currentWP]
         wpty = WPy[self.currentWP]
 
