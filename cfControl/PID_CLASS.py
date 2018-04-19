@@ -76,10 +76,10 @@ class PID_CLASS():
             self.pPID_set_point = 0
 
             self.yPID_P = 80
-            self.yPID_I = 20
+            self.yPID_I = 100
             self.yPID_D = 40
 
-            self.tPID_P = 45
+            self.tPID_P = 200
             self.tPID_I = 120
             self.tPID_D = 45
             self.tPID_set_point = 0
