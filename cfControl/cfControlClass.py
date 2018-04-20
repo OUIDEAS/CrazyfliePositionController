@@ -8,6 +8,7 @@ from viconStream import viconStream
 from responsePlots import responsePlots
 from logger import logger
 from waypointManager import waypointManager
+from vfGuidanceManager import vfGuidance
 
 
 class cfControlClass():
@@ -39,19 +40,20 @@ class cfControlClass():
         # 2) Vicon
         # 3) PID
 
-        thread = threading.Thread(target=self.messageMonitor, args=())
-        thread.daemon = True
-        thread.start()
+        if self.displayMessageMonitor:
+            thread = threading.Thread(target=self.messageMonitor, args=())
+            thread.daemon = True
+            thread.start()
 
 
-        self.startLog()
+        # self.startLog()
         time.sleep(1)
         self.startVicon()
         time.sleep(3)
 
         self.startControl()
         time.sleep(1)
-        # self.startPlots()
+        # self.startVFGuidanceManager()
 
         # self.startWaypointManager()
 
@@ -79,6 +81,10 @@ class cfControlClass():
 
     def startWaypointManager(self):
         self.waypointManager = waypointManager(self.name,self.QueueList)
+
+
+    def startVFGuidanceManager(self):
+        self.vfGuidance = vfGuidance(self.name,self.QueueList,1)
 
 
     def messageMonitor(self):

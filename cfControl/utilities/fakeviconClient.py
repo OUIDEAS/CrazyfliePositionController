@@ -2,18 +2,18 @@ import numpy as np
 import time
 
 class fakeviconClient():
-    def __init__(self,DeadPacket=False,Behavior='circle'):
+    def __init__(self,DeadPacket=False,Behavior='Static'):
 
 
         self.deadPacket = DeadPacket
         self.behavior = Behavior
         self.ts = time.time()
 
-        self.x = 0
+        self.x = -2
         self.y = 0
         self.z = 0
         self.angle = 0
-        self.d_angle = np.deg2rad(5)
+        self.d_angle = np.deg2rad(0.1)
 
         self.r = 10
 
@@ -46,10 +46,13 @@ class fakeviconClient():
             else:
 
                 if self.behavior == 'Static':
+                    self.x = self.x+0.0005
+                    self.y = self.y+0.000
                     x_ENU = self.x
                     y_ENU = self.y
                     z_ENU = self.z
                     heading = self.angle
+
 
                 elif self.behavior=='circle':
 
