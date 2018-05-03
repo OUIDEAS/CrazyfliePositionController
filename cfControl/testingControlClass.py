@@ -7,22 +7,25 @@ uav = cfControlClass('CF_1',(True,'TestingVF'),True)
 time.sleep(2)
 while uav.active:
 
-    uav.takeoff(0.25)
+    uav.takeoff(1)
     time.sleep(5)
 
 
 
 
 
-    uav.goto(-1.25,0,0.25)
+    uav.goto(1,0,1)
     time.sleep(6)
-    print("Starting VF Guidance")
-    uav.startVFGuidanceManager()
+    # print("Starting VF Guidance")
+    # uav.startVFGuidanceManager()
+    # time.sleep(5)
+
+    time.sleep(6)
+
+    uav.goto(-1,0,1)
     time.sleep(5)
-    uav.goto(0,0,0.25)
-    print("Ending VF Guidance")
-    uav.vfGuidance.active = False
-    time.sleep(1)
+    uav.goto(0,0,1)
+    time.sleep(6)
 
 
 
