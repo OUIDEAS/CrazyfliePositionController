@@ -37,8 +37,8 @@ class viconStream():
         thread.start()
 
     def run(self,QueueList):
-        # vc = viconClient.viconClient("192.168.0.197",801)
-        vc = fakeviconClient.fakeviconClient()
+        vc = viconClient.viconClient("192.168.0.197",801)
+        # vc = fakeviconClient.fakeviconClient()
         vc.vicon_connect()
 
 
@@ -84,7 +84,7 @@ class viconStream():
                     QueueList["vicon"].put(self.X)
 
                     if not QueueList["vicon_utility"].full():
-                        QueueList["vicon_utility"].put(self.X)
+                        QueueList["vicon_utility"].put_nowait(self.X)
 
             else:
                 self.DeadPacketCount = self.DeadPacketCount + 1

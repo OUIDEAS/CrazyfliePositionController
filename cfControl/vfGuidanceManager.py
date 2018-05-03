@@ -12,7 +12,7 @@ class vfGuidance():
         self.carrot_d = carrot
         self.QueueList = QueueList
         self.alt = alt
-        self.sleep_rate = 0.01
+        self.sleep_rate = 1
         self.message = {}
         self.active = True
         self.sp = {}
@@ -66,18 +66,20 @@ class vfGuidance():
                 vx = (x_new-x_old)/self.sleep_rate
                 vy = (y_new-y_old)/self.sleep_rate
                 v = np.sqrt(vx**2+vy**2)
+                print(v)
                 heading = np.arctan2(vy,vx)
                 turn_radius = v / turn_rate
 
 
+
                 Vg = vf.getOptVF2(x_new, y_new, turn_radius, heading, v)
                 cmd_heading = np.arctan2(Vg[1], Vg[0])
-                vf.calcFullField()
+                # vf.calcFullField()
                 x_cmd = self.carrot_d * np.cos(cmd_heading) + x_new
                 y_cmd = self.carrot_d * np.sin(cmd_heading) + y_new
 
 
-                self.plotSystemState(vf,x_new,y_new,vx,vy,Vg[0],Vg[1],x_cmd,y_cmd)
+                # self.plotSystemState(vf,x_new,y_new,vx,vy,Vg[0],Vg[1],x_cmd,y_cmd)
 
 
                 #Send to PID
@@ -86,6 +88,7 @@ class vfGuidance():
                 self.sp["z"] = float(self.alt)
 
                 self.QueueList["sp"].put(self.sp,block=False)
+                time.sleep(self.sleep_rate)
 
 
                 # print("AVFW:",vf.avfWeight,"\t","RVFW:",vf.rvfWeight)
@@ -109,9 +112,9 @@ class vfGuidance():
         # Plot Carrot position
         THETA = np.linspace(0, 2 * np.pi, 100)
 
-        plt.quiver(vf.Xs, vf.Ys, vf.Us, vf.Vs)
+        # plt.quiver(vf.Xs, vf.Ys, vf.Us, vf.Vs)
         plt.plot(vf.obstR*np.cos(THETA),vf.obstR*np.sin(THETA))
-        plt.quiver(x, y, vx, vy, color='b')
+        # plt.quiver(x, y, vx, vy, color='b')
         plt.quiver(x, y, u_cmd, v_cmd, color='r')
         plt.plot(x_cmd,y_cmd,'r*')
         plt.axis('equal')

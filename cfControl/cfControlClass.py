@@ -16,7 +16,7 @@ class cfControlClass():
 
         self.time_start=time.time()
         self.printUpdateRate = True
-        self.displayMessageMonitor = False
+        self.displayMessageMonitor = True
 
         self.active = True
         #Class Settings
@@ -27,8 +27,8 @@ class cfControlClass():
         #Queue Dictionary
         self.QueueList = {}
         self.QueueList["vicon"] = Queue(maxsize=20)
-        self.QueueList["vicon_utility"] = Queue(maxsize=1)
-        self.QueueList["sp"] = Queue()
+        self.QueueList["vicon_utility"] = Queue(maxsize=20)
+        self.QueueList["sp"] = Queue(maxsize=2)
         self.QueueList["dataLogger"] = Queue()
         self.QueueList["threadMessage"] = Queue()
         self.QueueList["controlShutdown"] = Queue()
@@ -46,7 +46,7 @@ class cfControlClass():
             thread.start()
 
 
-        # self.startLog()
+        self.startLog()
         time.sleep(1)
         self.startVicon()
         time.sleep(3)
@@ -84,7 +84,7 @@ class cfControlClass():
 
 
     def startVFGuidanceManager(self):
-        self.vfGuidance = vfGuidance(self.name,self.QueueList,1)
+        self.vfGuidance = vfGuidance(self.name,self.QueueList,0.25)
 
 
     def messageMonitor(self):
@@ -224,16 +224,21 @@ class cfControlClass():
 
     def land(self):
         sp = {}
-        X = self.QueueList["vicon"].get()
+
+        while not self.QueueList["vicon_utility"].empty():
+            self.QueueList["vicon_utility"].get()
+        X = self.QueueList["vicon_utility"].get()
         # sp["x"] = X["x"]
         # sp["y"] = X["y"]
         sp["x"] = X["x"]
         sp["y"] = X["y"]
         sp["z"] = X["z"]
-        while sp["z"]>0.1:
+        while sp["z"]>0.05:
             sp["z"] = sp["z"]-0.001
             self.QueueList["sp"].put(sp)
             time.sleep(0.01)
+
+        self.QueueList["controlShutdown"].put("KILL")
 
     def goto(self,x,y,z):
         sp = {}

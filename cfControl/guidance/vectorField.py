@@ -54,7 +54,7 @@ class vectorField():
         self.Xs, self.Ys = np.meshgrid(self.x_range, self.y_range)
 
 
-        self.velocity = 0.25
+        self.velocity = 1
         self.dubinsUAV = dubinsUAV()
         self.dubinsUAV.setup(self.x_start, 0, self.velocity, 0, 0.1)
 
@@ -117,6 +117,9 @@ class vectorField():
         try:
             if self.normObstConvergence:
                 mag = np.sqrt(np.square(obst_convergence[0])+np.square(obst_convergence[1]))
+                if mag ==0:
+                    mag =1
+
                 obst_convergence = np.divide(obst_convergence,mag)
         except:
             pass
@@ -124,6 +127,9 @@ class vectorField():
         try:
             if self.normObstCirculation:
                 mag = np.sqrt(np.square(obst_circulation[0])+np.square(obst_circulation[1]))
+                if mag==0:
+                    mag = 1
+
                 obst_circulation = np.divide(obst_circulation,mag)
         except:
             pass
@@ -133,6 +139,8 @@ class vectorField():
 
         if self.normObstTotal:
             mag  = np.sqrt(np.square(gv[0])+np.square(gv[1]))
+            if mag==0:
+                mag = 1
             gv = np.divide(gv,mag)
 
 
@@ -230,8 +238,8 @@ class vectorField():
                 self.rvfWeight = 1
                 self.avfWeight = 1 / 8
 
-                g = - uav_v * np.cos(abs(beta)) - abs(1 / ((range - self.obstR) * uav_v))
-                g = -(uav_v + abs(1 / ((range - self.obstR)))) * np.cos(abs(beta))
+                # g = - uav_v * np.cos(abs(beta)) - abs(1 / ((range - self.obstR) * uav_v))
+                g = -(uav_v + abs(1 / ((range - self.obstR+1)))) * np.cos(abs(beta))
                 if g > 0:
                     g = 0
                 self.obstG = -g
