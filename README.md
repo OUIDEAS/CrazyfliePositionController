@@ -1,19 +1,24 @@
-# Crazyflie Position Guidance and Control
+# Crazyflie Position Control and Guidance
 
-Python scripts for collecting vicon motion capture data and controlling crazyflie 2.0 quadcopter. 
+Python library for controlling the position of the crazyflie 2.0. 
+
+
+# Requirements
+- Python 3.6
+- Python vicon built for python 3.x
+- Crazyflie Client with ZMQ input enabled
+
 
 # Instructions:
-
-- Launch CFClient with ZMQ enabled
-- Time based waypoint navigation can be achieved by executing kctrl_CoordinateTransform.py in cfControl folder
-
-# kctrl_CoordinateTransform.py Explaination
-kctrl_CoordinateTransform implements four PID controllers to produce roll, pitch, yaw, and thrust commands based on global x,y,z and heading set-points. A thread
-is spawned that samples VICON data at 100Hz in the background that can be referenced by the controller. A log file is created at the termination of each run with each PID values and time of execution.
+- cd inside cfControl folder
+- For new scripts, import cfControlClass
+- See demo.py for example
+ 
 
 # Known problems and future improvements
-- motor cuttoff is not guaranteed when geofence is breached
-- motor cuttoff is not guaranteed when VICON recieves a dead packet
-- Built in takeoff method
-- Built in landing method
-- Proximity waypoint switching (currently time based)
+- Geofence
+- Rollover protection
+- Landing velocity control
+- Takeoff veloocity control
+- Guidance selector
+- Sub to crazyflie and log
