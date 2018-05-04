@@ -1,9 +1,0 @@
-Need:
-http://landinghub.visualstudio.com/visual-cpp-build-tools
-https://wiki.python.org/moin/WindowsCompilers
-
-Followed porting guide:
-https://docs.python.org/3/howto/cporting.html
-
-Cannot find rc.exe?
-https://stackoverflow.com/questions/14372706/visual-studio-cant-build-due-to-rc-exe%22
