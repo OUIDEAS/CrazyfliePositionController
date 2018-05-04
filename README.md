@@ -2,7 +2,6 @@
 
 Python library for controlling the position of the crazyflie 2.0. 
 
-
 # Requirements
 - Python 3.6
 - Python vicon built for python 3.x
