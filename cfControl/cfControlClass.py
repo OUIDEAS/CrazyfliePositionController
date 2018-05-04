@@ -12,17 +12,17 @@ from vfGuidanceManager import vfGuidance
 
 
 class cfControlClass():
-    def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
+    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False):
 
         self.time_start=time.time()
-        self.printUpdateRate = True
-        self.displayMessageMonitor = True
+        self.printUpdateRate = dispUpdateRate
+        self.displayMessageMonitor = dispMessageMonitor
 
         self.active = True
         #Class Settings
         self.name = uavName
-        self.logEnabled = logEnabled[0]
-        self.logName = logEnabled[1]
+        self.logEnabled = logEnabled
+        self.logName = logName
 
         #Queue Dictionary
         self.QueueList = {}
@@ -46,32 +46,16 @@ class cfControlClass():
             thread.start()
 
 
-        self.startLog()
+        if logEnabled:
+            self.startLog()
+
+
         time.sleep(1)
         self.startVicon()
         time.sleep(3)
 
         self.startControl()
         time.sleep(1)
-        # self.startVFGuidanceManager()
-
-        # self.startWaypointManager()
-
-        # updown = threading.Thread(target=self.upDown,args=())
-        # updown.daemon = True
-        # updown.start()
-
-        if self.printUpdateRate:
-            t = threading.Thread(target=self.printQ,args=())
-            t.daemon = True
-            t.start()
-
-        # grid = threading.Thread(target=self.gridFlight(),args=())
-        # grid.daemon = True
-        # grid.start()
-
-
-
 
         if self.printUpdateRate:
             t = threading.Thread(target=self.printQ,args=())
