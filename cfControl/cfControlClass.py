@@ -2,13 +2,11 @@ import time
 import numpy as np
 from multiprocessing import Queue
 import threading
-
 from PID_CLASS import PID_CLASS
 from viconStream import viconStream
-from responsePlots import responsePlots
 from logger import logger
 from waypointManager import waypointManager
-from vfGuidanceManager import vfGuidance
+
 
 
 class cfControlClass():
@@ -60,10 +58,6 @@ class cfControlClass():
 
     def startWaypointManager(self):
         self.waypointManager = waypointManager(self.name,self.QueueList)
-
-
-    def startVFGuidanceManager(self):
-        self.vfGuidance = vfGuidance(self.name,self.QueueList,0.25)
 
 
     def messageMonitor(self):

@@ -12,7 +12,7 @@ import time
 #fakeVicon          [bool]      Fake vicon data for testing purposes
 
 
-uav = cfControlClass(uavName='CF_1',dispUpdateRate=True)
+uav = cfControlClass(uavName='CF_2',dispUpdateRate=True,logEnabled=True,logName='ExampleLog')
 
 
 
