@@ -150,14 +150,6 @@ class PID_CLASS():
                     self.message["data"] = new_set_point
                     self.QueueList["threadMessage"].put(self.message)
 
-
-                    #Experimental, may cause unstable flight
-                    # self.r_pid.Integrator = 0
-                    # self.p_pid.Integrator = 0
-                    # self.y_pid.Integrator = 0
-                    # self.t_pid.Integrator = 0
-
-
                 # Changing setpoint to local coordinates
                 theta = np.arctan2(SPy - y, SPx - x)
                 SPx_b = SPx - x

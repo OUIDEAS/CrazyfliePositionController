@@ -9,6 +9,7 @@ import time
 #logName:           [str]       Name of the log file
 #dispUpdateRate     [bool]      Displays update rate of VICON and PID threads
 #dispMessageMonitor [bool]      Displays thread message (Thread states, setpoints, errors, etc)
+#fakeVicon          [bool]      Fake vicon data for testing purposes
 
 
 uav = cfControlClass(uavName='CF_1',dispUpdateRate=True)

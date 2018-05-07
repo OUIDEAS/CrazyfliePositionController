@@ -12,17 +12,18 @@ from vfGuidanceManager import vfGuidance
 
 
 class cfControlClass():
-    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False):
+    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False):
 
         self.time_start=time.time()
         self.printUpdateRate = dispUpdateRate
         self.displayMessageMonitor = dispMessageMonitor
 
         self.active = True
-        #Class Settings
         self.name = uavName
         self.logEnabled = logEnabled
         self.logName = logName
+        self.fakeVicon = fakeVicon
+
 
         #Queue Dictionary
         self.QueueList = {}
@@ -33,12 +34,6 @@ class cfControlClass():
         self.QueueList["threadMessage"] = Queue()
         self.QueueList["controlShutdown"] = Queue()
 
-
-
-        # Startup Proceedure
-        # 1) Message Monitor
-        # 2) Vicon
-        # 3) PID
 
         if self.displayMessageMonitor:
             thread = threading.Thread(target=self.messageMonitor, args=())
@@ -133,7 +128,7 @@ class cfControlClass():
 
     def startVicon(self):
         print("Connecting to vicon stream. . .")
-        self.cf_vicon = viconStream(self.name,self.QueueList)
+        self.cf_vicon = viconStream(self.name,self.QueueList,self.fakeVicon)
         # self.cf_vicon = viconStream(self.name,self.vicon_queue,self.error_queue)
 
     def startControl(self):
