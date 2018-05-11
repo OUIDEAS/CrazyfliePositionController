@@ -9,7 +9,7 @@ Python library for controlling the position of the crazyflie 2.0.
 
 # Program Structure
 
-![alt text](/Documentation/flowchart.png)
+![alt text](/Documentation/flowchart.PNG)
 
 
 # Instructions:
