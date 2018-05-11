@@ -41,6 +41,8 @@ Python library for controlling the position of the crazyflie 2.0.
  
 
 # Known problems and future improvements
+- Quad stability depends on high update rate vicon and PID threads. Accessing ["vicon"] data slows down control thread and causes instability
+- Implementing a pub-sub message system to prevent thread communication bottle-neck is needed. ZMQ has pub-sub
 - Geofence
 - Rollover protection
 - Landing velocity control
