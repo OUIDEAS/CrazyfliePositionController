@@ -7,6 +7,10 @@ Python library for controlling the position of the crazyflie 2.0.
 - Python vicon built for python 3.x
 - Crazyflie Client with ZMQ input enabled
 
+# Program Structure
+
+![alt text](/Documentation/flowchart.png)
+
 
 # Instructions:
 - cd inside cfControl folder
