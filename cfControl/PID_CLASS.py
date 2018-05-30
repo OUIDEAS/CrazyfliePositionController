@@ -79,7 +79,7 @@ class PID_CLASS():
             self.yPID_I = 50
             self.yPID_D = 30
 
-            self.tPID_P = 100
+            self.tPID_P = 70
             self.tPID_I = 90
             self.tPID_D = 70
             self.tPID_set_point = 0
@@ -149,14 +149,6 @@ class PID_CLASS():
                     self.message["mess"] = 'NEW_SP_ACCEPTED'
                     self.message["data"] = new_set_point
                     self.QueueList["threadMessage"].put(self.message)
-
-
-                    #Experimental, may cause unstable flight
-                    # self.r_pid.Integrator = 0
-                    # self.p_pid.Integrator = 0
-                    # self.y_pid.Integrator = 0
-                    # self.t_pid.Integrator = 0
-
 
                 # Changing setpoint to local coordinates
                 theta = np.arctan2(SPy - y, SPx - x)

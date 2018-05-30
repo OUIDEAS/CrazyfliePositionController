@@ -2,43 +2,36 @@ import time
 import numpy as np
 from multiprocessing import Queue
 import threading
-
 from PID_CLASS import PID_CLASS
 from viconStream import viconStream
-from responsePlots import responsePlots
 from logger import logger
 from waypointManager import waypointManager
-from vfGuidanceManager import vfGuidance
+
 
 
 class cfControlClass():
-    def __init__(self,uavName='CF_1',logEnabled = (True,'Default'),plotsEnabled=True):
+    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False):
 
         self.time_start=time.time()
-        self.printUpdateRate = True
-        self.displayMessageMonitor = True
+        self.printUpdateRate = dispUpdateRate
+        self.displayMessageMonitor = dispMessageMonitor
 
         self.active = True
-        #Class Settings
         self.name = uavName
-        self.logEnabled = logEnabled[0]
-        self.logName = logEnabled[1]
+        self.logEnabled = logEnabled
+        self.logName = logName
+        self.fakeVicon = fakeVicon
+
 
         #Queue Dictionary
         self.QueueList = {}
         self.QueueList["vicon"] = Queue(maxsize=20)
-        self.QueueList["vicon_utility"] = Queue(maxsize=20)
+        self.QueueList["vicon_utility"] = Queue(maxsize=1)
         self.QueueList["sp"] = Queue(maxsize=2)
         self.QueueList["dataLogger"] = Queue()
         self.QueueList["threadMessage"] = Queue()
         self.QueueList["controlShutdown"] = Queue()
 
-
-
-        # Startup Proceedure
-        # 1) Message Monitor
-        # 2) Vicon
-        # 3) PID
 
         if self.displayMessageMonitor:
             thread = threading.Thread(target=self.messageMonitor, args=())
@@ -46,32 +39,16 @@ class cfControlClass():
             thread.start()
 
 
-        self.startLog()
+        if logEnabled:
+            self.startLog()
+
+
         time.sleep(1)
         self.startVicon()
         time.sleep(3)
 
         self.startControl()
         time.sleep(1)
-        # self.startVFGuidanceManager()
-
-        # self.startWaypointManager()
-
-        # updown = threading.Thread(target=self.upDown,args=())
-        # updown.daemon = True
-        # updown.start()
-
-        if self.printUpdateRate:
-            t = threading.Thread(target=self.printQ,args=())
-            t.daemon = True
-            t.start()
-
-        # grid = threading.Thread(target=self.gridFlight(),args=())
-        # grid.daemon = True
-        # grid.start()
-
-
-
 
         if self.printUpdateRate:
             t = threading.Thread(target=self.printQ,args=())
@@ -81,10 +58,6 @@ class cfControlClass():
 
     def startWaypointManager(self):
         self.waypointManager = waypointManager(self.name,self.QueueList)
-
-
-    def startVFGuidanceManager(self):
-        self.vfGuidance = vfGuidance(self.name,self.QueueList,0.25)
 
 
     def messageMonitor(self):
@@ -149,7 +122,7 @@ class cfControlClass():
 
     def startVicon(self):
         print("Connecting to vicon stream. . .")
-        self.cf_vicon = viconStream(self.name,self.QueueList)
+        self.cf_vicon = viconStream(self.name,self.QueueList,self.fakeVicon)
         # self.cf_vicon = viconStream(self.name,self.vicon_queue,self.error_queue)
 
     def startControl(self):

@@ -19,11 +19,15 @@ VF.simulateDubins(velocity)
 plt.pause(1)
 
 
-uav = cfControlClass('CF_1',(True,'TestingVF'),True)
+uav = cfControlClass(uavName='CF_1',dispUpdateRate=True,logEnabled=True,logName='ExampleLog')
 time.sleep(2)
 while uav.active:
 
-    uav.takeoff(1)
+    uav.takeoff(0.5)
+    time.sleep(5)
+    uav.goto(1,1,1)
+    time.sleep(5)
+    uav.goto(0,0,1)
     time.sleep(5)
     uav.land()
     time.sleep(2)

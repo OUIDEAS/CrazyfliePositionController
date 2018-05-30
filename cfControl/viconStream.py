@@ -7,11 +7,12 @@ from utilities import fakeviconClient
 
 class viconStream():
     # def __init__(self, name,q,error_queue):
-    def __init__(self, name,QueueList):
+    def __init__(self, name,QueueList,fakeVicon):
 
         self.name = name
         self.DeadPacketCount = 0
         self.MaxDeadPackets = 20
+        self.useFakeVicon = fakeVicon
 
 
         #active will be switched to false by the system monitor
@@ -37,10 +38,13 @@ class viconStream():
         thread.start()
 
     def run(self,QueueList):
-        vc = viconClient.viconClient("192.168.0.197",801)
-        # vc = fakeviconClient.fakeviconClient()
-        vc.vicon_connect()
 
+        if self.useFakeVicon:
+            vc = fakeviconClient.fakeviconClient()
+        else:
+            vc = viconClient.viconClient("192.168.0.197",801)
+
+        vc.vicon_connect()
 
 
         time.sleep(1)
