@@ -65,14 +65,14 @@ class PID_CLASS():
 
             time.sleep(1)
             # Controller gain default values
-            self.rPID_P = 29
-            self.rPID_I = 2.5
-            self.rPID_D = 19
+            self.rPID_P = 25
+            self.rPID_I = 25
+            self.rPID_D = 35
             self.rPID_set_point = 0
 
-            self.pPID_P = 29
-            self.pPID_I = 2.5
-            self.pPID_D = 19
+            self.pPID_P = 40
+            self.pPID_I = 25
+            self.pPID_D = 45
             self.pPID_set_point = 0
 
             self.yPID_P = 80
@@ -80,8 +80,8 @@ class PID_CLASS():
             self.yPID_D = 30
 
             self.tPID_P = 70
-            self.tPID_I = 90
-            self.tPID_D = 70
+            self.tPID_I = 100
+            self.tPID_D = 100
             self.tPID_set_point = 0
 
             # Setup PID controllers
@@ -111,6 +111,10 @@ class PID_CLASS():
             #Clear vicon Q before starting
             QueueList["vicon"].get()
 
+        X = QueueList["vicon"].get()
+        x_prev = X["x"]
+        y_prev = X["y"]
+        z_prev = X["z"]
 
         while active:
 
@@ -177,7 +181,7 @@ class PID_CLASS():
 
 
                 # Saturation control
-                pitch_roll_cap = 10
+                pitch_roll_cap = 9
 
                 if thrust > 100:
                     thrust = 100
@@ -208,6 +212,14 @@ class PID_CLASS():
 
                 self.update_rate = 1 / (t2 - t1)
 
+
+                #Calculate speed of UAV
+                u = np.sqrt(((X["x"]-x_prev)*self.update_rate)**2+((X["y"]-y_prev)*self.update_rate)**2+((X["z"]-z_prev)*self.update_rate)**2)
+                x_prev = X["x"]
+                y_prev = X["y"]
+                z_prev = X["z"]
+
+
                 #Log packet
                 pkt = {
                     "time":time.time()-self.time_start,
@@ -215,6 +227,7 @@ class PID_CLASS():
                     "y": y,
                     "z": z,
                     "yaw": yaw,
+                    "velocity": u,
                     "x_sp": SPx,
                     "y_sp": SPy,
                     "z_sp": SPz,
