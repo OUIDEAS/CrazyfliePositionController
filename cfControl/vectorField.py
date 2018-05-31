@@ -228,7 +228,7 @@ class vectorField():
             cost = cost+np.abs(self.dubinsUAV.y)/self.obstR*self.dubinsUAV.dt
 
 
-        print(np.max(self.dubinsUAV.ys))
+        print("max:",np.max(self.dubinsUAV.ys),"\t","min:",np.min(self.dubinsUAV.ys))
         self.calcFullField()
         plt.ion()
         plt.quiver(self.Xs, self.Ys, self.Us, self.Vs,color='blue')
