@@ -10,7 +10,7 @@ from waypointManager import waypointManager
 
 
 class cfControlClass():
-    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False):
+    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False,usePID = True):
 
         self.time_start=time.time()
         self.printUpdateRate = dispUpdateRate
@@ -25,7 +25,7 @@ class cfControlClass():
 
         #Queue Dictionary
         self.QueueList = {}
-        self.QueueList["vicon"] = Queue(maxsize=20)
+        self.QueueList["vicon"] = Queue(maxsize=5)
         self.QueueList["vicon_utility"] = Queue(maxsize=1)
         self.QueueList["sp"] = Queue(maxsize=2)
         self.QueueList["dataLogger"] = Queue()
@@ -47,8 +47,9 @@ class cfControlClass():
         self.startVicon()
         time.sleep(3)
 
-        self.startControl()
-        time.sleep(1)
+        if usePID:
+            self.startControl()
+            time.sleep(1)
 
         if self.printUpdateRate:
             t = threading.Thread(target=self.printQ,args=())
@@ -213,7 +214,7 @@ class cfControlClass():
 
         self.QueueList["controlShutdown"].put("KILL")
 
-    def goto(self,x,y,z):
+    def goto(self,x,y,z,yaw=0):
         sp = {}
         sp["x"] = x
         sp["y"] = y

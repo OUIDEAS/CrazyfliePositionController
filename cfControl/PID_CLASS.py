@@ -181,7 +181,7 @@ class PID_CLASS():
 
 
                 # Saturation control
-                pitch_roll_cap = 8
+                pitch_roll_cap = 10
 
                 if thrust > 100:
                     thrust = 100
