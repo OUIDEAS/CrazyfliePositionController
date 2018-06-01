@@ -78,17 +78,17 @@ VF = vf(m, y_ratio, k, Ho, theta_r, velocity)
 VF.rvfWeight = 1
 VF.calcFullField()
 
-VF.simulateDubins(velocity)
+# VF.simulateDubins(velocity)
 plt.pause(1)
 
-alt = 0.5
+alt = 1
 
 uav = cfControlClass(uavName='CF_1',dispUpdateRate=False,logEnabled=True,logName='AvoidWithoutDubins',dispMessageMonitor=False)
 time.sleep(2)
 while uav.active:
     uav.takeoff(alt)
     time.sleep(7)
-    uav.goto(-1.25,0,alt)
+    uav.goto(-2.25,0,alt)
     time.sleep(5)
 
 
@@ -97,7 +97,7 @@ while uav.active:
 
     time.sleep(0.01)
     X = uav.QueueList["vicon_utility"].get()
-    d = 0.075
+    d = 0.1
     x_prev = X["x"]
     y_prev = X["y"]
     z_prev = X["z"]
@@ -109,7 +109,7 @@ while uav.active:
 
     heading_old = 0
     dt = 0.1
-    while X["x"] < 1.75:
+    while X["x"] < 2:
         t1 = time.time()
         X = uav.QueueList["vicon_utility"].get()
         vect = VF.getVFatXY(X["x"],X["y"])
@@ -127,7 +127,7 @@ while uav.active:
         if x_go!=0 and y_go!=0:
             uav.goto(x_go,y_go,alt,yaw=vf_heading)
 
-        time.sleep(0.1)
+        time.sleep(0.25)
         t2 = time.time()
         dt = t2-t1
         # print("update rate:",dt)
@@ -136,14 +136,14 @@ while uav.active:
 
 
     time.sleep(5)
-    uav.goto(-1.25,0,alt)
+    uav.goto(-2.25,0,alt)
     time.sleep(5)
     uav.land()
     print('landing')
     time.sleep(5)
 
     uav.cf_vicon.active = False
-    time.sleep(0.1)
+    time.sleep(0.01)
     uav.active = False
 
 print('dead')
