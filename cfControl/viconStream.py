@@ -98,6 +98,7 @@ class viconStream():
                     QueueList["threadMessage"].put(self.message)
 
 
+
             time.sleep(self.sleep_rate)
             t2 = time.time()
 

@@ -214,11 +214,18 @@ class cfControlClass():
 
         self.QueueList["controlShutdown"].put("KILL")
 
-    def goto(self,x,y,z,yaw=0):
+    def goto(self,x,y,z):
         sp = {}
         sp["x"] = x
         sp["y"] = y
         sp["z"] = z
         self.QueueList["sp"].put(sp)
+
+
+    def throttleDown(self):
+        self.QueueList["controlShutdown"].put('THROTTLE_DOWN')
+
+    def kill(self):
+        self.QueueList["controlShutdown"].put('KILL')
 
 
