@@ -10,7 +10,9 @@ from waypointManager import waypointManager
 
 
 class cfControlClass():
+
     def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False,usePID = True):
+
 
         self.time_start=time.time()
         self.printUpdateRate = dispUpdateRate
@@ -47,9 +49,11 @@ class cfControlClass():
         self.startVicon()
         time.sleep(3)
 
+
         if usePID:
             self.startControl()
             time.sleep(1)
+
 
         if self.printUpdateRate:
             t = threading.Thread(target=self.printQ,args=())
