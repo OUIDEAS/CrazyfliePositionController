@@ -10,7 +10,9 @@ from waypointManager import waypointManager
 
 
 class cfControlClass():
-    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False):
+
+    def __init__(self,uavName='CF_1',logEnabled = False,logName = 'LOG',dispMessageMonitor = False,dispUpdateRate = False,fakeVicon=False,usePID = True):
+
 
         self.time_start=time.time()
         self.printUpdateRate = dispUpdateRate
@@ -25,8 +27,8 @@ class cfControlClass():
 
         #Queue Dictionary
         self.QueueList = {}
-        self.QueueList["vicon"] = Queue(maxsize=20)
-        self.QueueList["vicon_utility"] = Queue(maxsize=20)
+        self.QueueList["vicon"] = Queue(maxsize=5)
+        self.QueueList["vicon_utility"] = Queue(maxsize=1)
         self.QueueList["sp"] = Queue(maxsize=2)
         self.QueueList["dataLogger"] = Queue()
         self.QueueList["threadMessage"] = Queue()
@@ -47,8 +49,11 @@ class cfControlClass():
         self.startVicon()
         time.sleep(3)
 
-        self.startControl()
-        time.sleep(1)
+
+        if usePID:
+            self.startControl()
+            time.sleep(1)
+
 
         if self.printUpdateRate:
             t = threading.Thread(target=self.printQ,args=())
@@ -219,5 +224,12 @@ class cfControlClass():
         sp["y"] = y
         sp["z"] = z
         self.QueueList["sp"].put(sp)
+
+
+    def throttleDown(self):
+        self.QueueList["controlShutdown"].put('THROTTLE_DOWN')
+
+    def kill(self):
+        self.QueueList["controlShutdown"].put('KILL')
 
 

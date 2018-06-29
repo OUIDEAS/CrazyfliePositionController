@@ -1,6 +1,8 @@
 from cfControlClass import cfControlClass
 import threading
 import time
+import numpy as np
+
 
 
 #Create an instance of the cfControlClass. The class can take several arguments
@@ -11,47 +13,33 @@ import time
 #dispMessageMonitor [bool]      Displays thread message (Thread states, setpoints, errors, etc)
 #fakeVicon          [bool]      Fake vicon data for testing purposes
 
-
-uav = cfControlClass(uavName='CF_2',dispUpdateRate=True,logEnabled=True,logName='ExampleLog')
-
-
-
+alt = 0.3
+uav = cfControlClass(uavName='CF_1',dispUpdateRate=False,logEnabled=False,logName='scenario4',dispMessageMonitor=False)
+time.sleep(2)
 while uav.active:
 
-    #CMD uav to takeoff to altitude 1m
-    uav.takeoff(1)
-
-    #Main script sleeps for 5 seconds. UAV will hold position until a new setpoint is rec
+    uav.takeoff(alt)
     time.sleep(5)
 
-    #CMD uav to go to (x=1,y=0,z=1) and hold for 5 seconds
-    uav.goto(1,0,1)
-    time.sleep(5)
+    # uav.throttleDown()
+    # uav.QueueList["controlShutdown"].put('THROTTLE_DOWN')
 
-    #CMD uav to go to return to the origin and hold for 5 seconds
-    uav.goto(0,0,1)
-    time.sleep(5)
+    # uav.kill()
 
-    #CMD UAV to land by sending decreasing altitude setpoints
     uav.land()
-    time.sleep(2)
+    print('landing')
+    time.sleep(3)
 
-    #Kill vicon thread
     uav.cf_vicon.active = False
-    time.sleep(0.1)
-
-    #Kill uav class
+    time.sleep(0.25)
     uav.active = False
 
+print('dead')
 
-#Empty the Queuelist so script can properly exit
-for i in uav.QueueList:
-    while not uav.QueueList[i].empty():
-        uav.QueueList[i].get()
 
-threads = threading.enumerate()
-for i in range(0, len(threads)):
-    print(threads[i].name)
+
+
+
 
 
 

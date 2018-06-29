@@ -7,7 +7,7 @@ class dubinsUAV():
 
 
         self.useDubins = True
-        self.v = 10
+        self.v = 0.25
         self.dt = 0.1
         self.t = 0
         self.turnrate = 0.35

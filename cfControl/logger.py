@@ -11,6 +11,7 @@ class logger():
         self.QueueList = QueueList
         self.sleep_rate = 0.0001
         self.update_rate = []
+        self.active = True
 
 
         if self.logName is not 'Default':
@@ -31,9 +32,10 @@ class logger():
         print('Closing file')
         self.f.close()
 
+
     def run(self):
         time.sleep(1)
-        while True:
+        while self.active:
             t1 = time.time()
             if not self.QueueList["dataLogger"].empty():
                 time.sleep(self.sleep_rate)

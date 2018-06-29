@@ -1,15 +1,24 @@
 import numpy as np
 from matplotlib import pyplot as plt
-from guidance.dubinsUAV import dubinsUAV
+from dubinsUAV import dubinsUAV
 
 
 
 class vectorField():
-    def __init__(self):
-
-
+    def __init__(self,m,y_o,k_o,H_o,theta_r,velocity):
         self.curr_cmd = []
 
+        #Define the obstacle
+        self.M = m
+
+        self.K = k_o
+        self.obstH = H_o
+
+
+
+        self.obstR = self.M*theta_r
+        self.Yo = y_o*self.obstR
+        self.decayR = self.obstR*self.K
 
         #Summed Guidance Parameters
         self.normSummedFields = True
@@ -21,26 +30,26 @@ class vectorField():
         self.pathAngle = np.pi/2
         self.normPathConvergence = False
         self.normPathCirculation = False
-        self.normPathTotal = True
+        self.normPathTotal = False
         self.pathG = -1
-        self.pathH = 10
+        self.pathH = velocity
 
         #Obstacle Paramemters
         self.normObstConvergence = True
         self.normObstCirculation = True
-        self.normObstTotal = True
+        self.normObstTotal = False
         self.obstDecayActive = True
 
         self.xc = 0
-        self.yc = 0
+        self.yc = self.Yo
         self.r = 0.01
-        self.decayR = 30
+        # self.decayR = 1
         self.obstG = 1
-        self.obstH = 10
-        self.gamma = 1
+
+
+
 
         #Plotting Functionality
-
         self.x_range = np.linspace(-2, 2, 25)
         self.y_range = self.x_range
         self.x_start = -2
@@ -61,19 +70,6 @@ class vectorField():
 
 
         pass
-
-
-    def setupObst(self,obstY,obstX,gamma):
-
-        self.obstR = self.dubinsUAV.v / 0.35
-        self.obstY = obstY
-        self.obstX = obstX
-        self.xc = obstX
-        self.yc = obstY
-
-        self.decayR = self.dubinsUAV.turn_radius*gamma+self.obstR
-        self.pathH = 2*self.dubinsUAV.v
-
 
     def calcPath(self,x,y):
         a = 2*x*np.square(np.cos(self.pathAngle))+2*np.cos(self.pathAngle)*np.sin(self.pathAngle)*y
@@ -169,109 +165,17 @@ class vectorField():
         return gv
 
 
-    def getOptVF(self,uav):
-        if uav.x <= (uav.turn_radius * self.gamma + self.obstR):
-
-            alpha = np.arctan2(uav.y - self.obstY, uav.x)
-            beta = np.pi - alpha + uav.heading
-            range = np.sqrt((uav.x - self.obstX)**2 + (uav.y - self.obstY)**2)
-
-
-            turnR = uav.turn_radius
-
-            y = turnR * (1 - np.cos(np.pi / 2))
-            X = self.obstX - np.sqrt((turnR + self.obstR)**2 - (y - self.obstY)**2)
-            theta = np.arcsin((y - self.obstY) / (self.obstR + turnR))
-            zeta = np.pi + theta
-            X_turn = (-X + turnR * np.cos(zeta))
-            Y_turn = y + turnR * np.sin(zeta)
-
-
-            if abs(uav.x) <= abs(X * 1.02) and alpha > np.arctan2(Y_turn, X_turn):
-                self.rvfWeight = 1
-                self.avfWeight = 1 / 8
-
-                g = - uav.v * np.cos(abs(beta)) - abs(1 / ((range - self.obstR) * uav.v))
-                g = -(uav.v+abs(1/((range-self.obstR))))*np.cos(abs(beta))
-                if g > 0:
-                    g = 0
-
-                self.obstG = -g
-
-                if uav.y <= Y_turn and uav.x >= X_turn:
-                    self.avfWeight = 1
-                    self.rvfWeight = 0
-            else:
-                self.avfWeight = 1
-                self.rvfWeight = 0
-
-        path = self.calcPath(uav.x, uav.y)
-        obst = self.calcObst(uav.x, uav.y)
-
-        gv = self.avfWeight * path + self.rvfWeight * obst
-
-        if self.normSummedFields:
-            mag = np.sqrt(np.square(gv[0]) + np.square(gv[1]))
-            gv = np.divide(gv, mag)
-
-        return gv
-
-    def getOptVF2(self, uav_x,uav_y,uav_tr,uav_heading,uav_v):
-
-
-        if uav_x <= (self.obstR* self.gamma + self.obstR):
-            alpha = np.arctan2(uav_y - self.obstY, uav_x)
-            beta = np.pi - alpha + uav_heading
-            range = np.sqrt((uav_x - self.obstX) ** 2 + (uav_y - self.obstY) ** 2)
-
-            turnR = uav_tr
-
-            y = turnR * (1 - np.cos(np.pi / 2))
-            X = self.obstX - np.sqrt((turnR + self.obstR) ** 2 - (y - self.obstY) ** 2)
-            theta = np.arcsin((y - self.obstY) / (self.obstR + turnR))
-            zeta = np.pi + theta
-            X_turn = (-X + turnR * np.cos(zeta))
-            Y_turn = y + turnR * np.sin(zeta)
-
-
-            if uav_x < abs(X) * 1.02 and alpha > np.arctan2(Y_turn, X_turn):
-                self.rvfWeight = 1
-                self.avfWeight = 1 / 8
-
-                # g = - uav_v * np.cos(abs(beta)) - abs(1 / ((range - self.obstR) * uav_v))
-                g = -(uav_v + abs(1 / ((range - self.obstR+1)))) * np.cos(abs(beta))
-                if g > 0:
-                    g = 0
-                self.obstG = -g
-
-                if abs(uav_y) < abs(Y_turn) and uav_x > X_turn:
-                    self.avfWeight = 1
-                    self.rvfWeight = 0
-            else:
-                self.avfWeight = 1
-                self.rvfWeight = 0
-
-        else:
-            self.avfWeight = 1
-            self.rvfWeight = 0
-
-        path = self.calcPath(uav_x, uav_y)
-        obst = self.calcObst(uav_x, uav_y)
-
-        gv = self.avfWeight * path + self.rvfWeight * obst
-
-        if self.normSummedFields:
-            mag = np.sqrt(np.square(gv[0]) + np.square(gv[1]))
-            gv = np.divide(gv, mag)
-
-        return gv
-
     def pltObstacle(self):
 
         theta = np.linspace(0,2*np.pi,100)
         cxs = self.xc+self.obstR*np.cos(theta)
         cys = self.yc+self.obstR*np.sin(theta)
-        plt.plot(cxs,cys,'b')
+
+        CXS = self.xc+self.decayR*np.cos(theta)
+        CYS = self.yc+self.decayR*np.sin(theta)
+
+        plt.plot(CXS,CYS,'r',linestyle='--')
+        plt.plot(cxs,cys,'r',)
 
     def calcFullField(self):
         for i in range(0, len(self.x_range)):
@@ -287,72 +191,52 @@ class vectorField():
 
     def plotPosition(self,x,y,heading,vx,vy,v,turn_radius,carrot_d):
         plt.cla()
-
-
-        #Get vector and update field parameters
-        #Calculate full field
-
-        #Plot full field
-        #Plot obstacle
-        #Plot UAV position
-        #Plot UAV velocity vector
-        #Plot CMDED UAV vector
-        #Plot Carrot position
-
         Vg = self.getOptVF2(x, y, turn_radius, heading, v)
         cmd_heading = np.arctan2(Vg[1], Vg[0])
         self.calcFullField()
-
-
         plt.quiver(self.Xs, self.Ys, self.Us, self.Vs)
-
-
-
         x_cmd = carrot_d * np.cos(heading)+x
         y_cmd = carrot_d * np.sin(heading)+y
         plt.plot(x_cmd,y_cmd,'r*')
-
         THETA = np.linspace(0,2*np.pi,100)
         plt.plot(self.decayR*np.cos(THETA),self.decayR*np.sin(THETA))
-
         plt.quiver(x, y, vx, vy, color='b')
         plt.quiver(x, y, Vg[0], Vg[1], color='r')
         plt.axis('equal')
         plt.axis([-5,5,-5,5])
-
         self.curr_cmd = heading
 
 
 
-    def simulateDubins(self):
-        velocity = 0.25
+    def simulateDubins(self,velocity):
+
 
         self.dubinsUAV.setup(self.x_start, 0, velocity, 0, 0.1)
-        plt.ion()
+
+        cost = 0
         while self.dubinsUAV.x < -1 * self.x_start:
-            plt.cla()
-            self.calcFullField()
-            plt.quiver(self.Xs, self.Ys, self.Us, self.Vs)
-
-            # Vg = self.getOptVF(self.dubinsUAV)
-
             uav_x = self.dubinsUAV.x
             uav_y = self.dubinsUAV.y
             uav_tr = self.dubinsUAV.turn_radius
             uav_heading = self.dubinsUAV.heading
             uav_v = self.dubinsUAV.v
 
-            Vg = self.getOptVF2(uav_x,uav_y,uav_tr,uav_heading,uav_v)
+            Vg = self.getVFatXY(uav_x,uav_y)
             heading = np.arctan2(Vg[1], Vg[0])
             self.dubinsUAV.update_pos(heading)
-            self.pltObstacle()
-            plt.plot(self.dubinsUAV.xs, self.dubinsUAV.ys, 'r')
-            plt.quiver(self.dubinsUAV.x, self.dubinsUAV.y, self.dubinsUAV.vx, self.dubinsUAV.vy, color='b')
-            plt.quiver(self.dubinsUAV.x, self.dubinsUAV.y, Vg[0], Vg[1], color='r')
 
-            plt.axis('equal')
+            cost = cost+np.abs(self.dubinsUAV.y)/self.obstR*self.dubinsUAV.dt
 
-            plt.pause(0.01)
+
+        self.calcFullField()
+        plt.ion()
+        plt.quiver(self.Xs, self.Ys, self.Us, self.Vs,color='blue')
+        self.pltObstacle()
+        plt.plot(self.dubinsUAV.xs, self.dubinsUAV.ys,color= 'k')
+        plt.quiver(self.dubinsUAV.x, self.dubinsUAV.y, self.dubinsUAV.vx, self.dubinsUAV.vy, color='b')
+        plt.axis('equal')
+        print("Cost from Dubins:",np.floor(cost))
+
 
 
 
